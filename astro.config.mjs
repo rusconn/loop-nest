@@ -22,8 +22,8 @@ export default defineConfig({
         navigateFallbackAllowlist: [/^\/$/],
       },
       manifest: {
-        name: "Game Music Player",
-        short_name: "Game Music Player",
+        name: "LoopNest",
+        short_name: "LoopNest",
         start_url: "/",
         display: "standalone",
         orientation: "portrait",

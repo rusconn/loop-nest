@@ -1,5 +1,5 @@
 {
-  "name": "game-music-player",
+  "name": "loop-nest",
   "private": true,
   "type": "module",
   "devEngines": {
@@ -18,8 +18,8 @@
     "dev": "astro dev",
     "check": "astro check && prettier --cache --check .",
     "build": "astro build",
-    "preview": "firebase serve --project game-music-player-web",
-    "deploy": "firebase deploy --project game-music-player-web"
+    "preview": "firebase serve --project loop-nest",
+    "deploy": "firebase deploy --project loop-nest"
   },
   "dependencies": {
     "music-metadata": "11.13.0"

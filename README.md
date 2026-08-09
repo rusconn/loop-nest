@@ -1,4 +1,4 @@
-# Game Music Player
+# LoopNest
 
 A web-based music player.\
 Inspired by [LoopMusicPlayer-Web](https://github.com/Mr-Ojii/LoopMusicPlayer-Web).
