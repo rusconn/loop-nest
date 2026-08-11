@@ -1,6 +1,5 @@
 ---
 import MediaSession from "./music-player/media-session.astro";
-import TitleDisplay from "./music-player/title-display.astro";
 import PlayControl from "./music-player/play-control.astro";
 import VolumeControl from "./music-player/volume-control.astro";
 import TempoControl from "./music-player/tempo-control.astro";
@@ -8,7 +7,6 @@ import TempoControl from "./music-player/tempo-control.astro";
 
 <music-player>
   <fieldset class="controls" disabled>
-    <TitleDisplay class="title-display" />
     <PlayControl class="play-control">
       <VolumeControl slot="volume" />
       <TempoControl slot="tempo" />

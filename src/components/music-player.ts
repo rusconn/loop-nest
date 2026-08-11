@@ -44,7 +44,6 @@ type FailLoadingDetail = { music: Music.Music };
 
 export class MusicPlayerElement extends HTMLElement {
   #mediaSession!: MediaSessionElement;
-  #titleDisplay!: HTMLDivElement;
   #playControl!: PlayControlElement;
   #volumeControl!: VolumeControlElement;
   #tempoControl!: TempoControlElement;
@@ -58,7 +57,6 @@ export class MusicPlayerElement extends HTMLElement {
 
   connectedCallback() {
     this.#setupMediaSession();
-    this.#setupTitleDisplay();
     this.#setupControlsFieldset();
     this.#setupPlayControl();
     this.#setupVolumeControl();
@@ -74,10 +72,6 @@ export class MusicPlayerElement extends HTMLElement {
     this.#mediaSession.setActionHandler("pause", async () => {
       await this.pause();
     });
-  }
-
-  #setupTitleDisplay() {
-    this.#titleDisplay = this.querySelector(".title-display")!;
   }
 
   #setupControlsFieldset() {
@@ -370,9 +364,8 @@ export class MusicPlayerElement extends HTMLElement {
 
   #loadToUI(music: Music.Music) {
     const { metadata, settings } = music;
-    const { common, format } = metadata;
+    const { format } = metadata;
 
-    this.#titleDisplay.textContent = common.title;
     this.#playControl.duration = format.duration;
     this.#playControl.time = 0;
     this.#volumeControl.volume = Math.round(settings.volume * 100);
