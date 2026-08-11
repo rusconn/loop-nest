@@ -8,15 +8,13 @@ import MusicList from "../components/music-list.astro";
 <Layout>
   <main>
     <div class="music-manager">
-      <div class="music-manager-layout container">
+      <div class="music-manager-layout">
         <MusicUploader />
         <MusicList />
       </div>
     </div>
     <div class="music-player">
-      <div class="container">
-        <MusicPlayer />
-      </div>
+      <MusicPlayer />
     </div>
   </main>
 </Layout>
@@ -36,28 +34,26 @@ import MusicList from "../components/music-list.astro";
     scrollbar-gutter: stable both-edges;
   }
 
-  .music-player {
-    position: sticky;
-    bottom: 0;
-    background-color: #1b1b1b;
-    color: #e2e2e2;
-    scrollbar-color: #1b1b1b transparent;
-    scrollbar-gutter: stable both-edges;
-  }
-  :global(.mobile) .music-player {
-    background-color: #000;
-  }
-
   .music-manager-layout {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-  }
-
-  .container {
     margin-inline: auto;
     inline-size: clamp(20rem, 100%, 30rem);
-    padding: 1.25rem;
+    padding-block-start: 1.25rem;
+    padding-block-end: 0.75rem;
+    padding-inline: 1.25rem;
+  }
+
+  .music-player {
+    position: sticky;
+    bottom: 0;
+    scrollbar-color: #1b1b1b transparent;
+    scrollbar-gutter: stable both-edges;
+    margin-inline: auto;
+    inline-size: clamp(20rem, 100%, 30rem);
+    padding-block-end: 0.75rem;
+    padding-inline: 0.5rem;
   }
 </style>
 

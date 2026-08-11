@@ -51,8 +51,9 @@ export class VolumeControlElement extends HTMLElement {
         const rect = this.#trigger.getBoundingClientRect();
         this.#popup.style.position = "fixed";
         this.#popup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
-        this.#popup.style.right = `${window.innerWidth - rect.right}px`;
-        this.#popup.style.left = "auto";
+        this.#popup.style.left = `${rect.left + rect.width / 2}px`;
+        this.#popup.style.transform = "translateX(-50%)";
+        this.#popup.style.right = "auto";
       }
     });
 

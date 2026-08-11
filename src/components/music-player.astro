@@ -18,6 +18,16 @@ import TempoControl from "./music-player/tempo-control.astro";
 <style>
   music-player {
     display: block;
+    background-color: #1b1b1b;
+    color: #e2e2e2;
+    padding-block: 0.875rem;
+    padding-inline: 1.375rem;
+    border-radius: 100vmax;
+    border: 1px solid #333;
+  }
+  :global(.mobile) music-player {
+    background-color: #000;
+    border-color: #222;
   }
 
   .controls {
