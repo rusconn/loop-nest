@@ -1,8 +1,6 @@
 import { parseBuffer, type IAudioMetadata } from "music-metadata";
 
 import { hash } from "../lib/hash";
-import { MusicMetadataStorage } from "../storage/music/metadata";
-import { MusicSettingsStorage } from "../storage/music/settings";
 
 export type Music = {
   id: MusicId;
@@ -37,7 +35,7 @@ export type Settings = {
   tempo: number;
 };
 
-const CURRENT_METADATA_VERSION = 2;
+export const CURRENT_METADATA_VERSION = 2;
 
 export type ParseResult =
   | { kind: "ok"; music: Music }
@@ -46,18 +44,11 @@ export type ParseResult =
   | { kind: "unreadable"; cause: unknown };
 
 export const Music = {
-  async parse(file: File): Promise<ParseResult> {
-    const buffer = await file.arrayBuffer();
-    const id = `music-${await hash("SHA-1", buffer)}` as const;
-    const savedMetadata = MusicMetadataStorage.get(id);
-    const savedSettings = MusicSettingsStorage.get(id);
+  async id(buffer: ArrayBuffer): Promise<MusicId> {
+    return `music-${await hash("SHA-1", buffer)}`;
+  },
 
-    const isOldMetadata = savedMetadata != null && savedMetadata.version < CURRENT_METADATA_VERSION;
-
-    if (savedMetadata && savedSettings && !isOldMetadata) {
-      return { kind: "ok", music: { id, file, metadata: savedMetadata, settings: savedSettings } };
-    }
-
+  async parse(id: MusicId, buffer: ArrayBuffer, file: File): Promise<ParseResult> {
     let rawMetadata: IAudioMetadata;
     try {
       rawMetadata = await parseBuffer(new Uint8Array(buffer), file.type, {
@@ -74,19 +65,11 @@ export const Music = {
     }
 
     const { metadata, loopError } = parseMetadata(rawMetadata, duration, file.name);
-    const settings = savedSettings ?? { volume: 1, tempo: 1 };
-
+    const settings: Settings = { volume: 1, tempo: 1 };
     const music: Music = { id, file, metadata, settings };
 
     if (loopError != null) {
       return { kind: "invalid-loop", music, message: loopError };
-    }
-
-    if (!savedMetadata || isOldMetadata) {
-      MusicMetadataStorage.set(id, metadata);
-    }
-    if (!savedSettings) {
-      MusicSettingsStorage.set(id, settings);
     }
 
     return { kind: "ok", music };

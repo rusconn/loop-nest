@@ -1,4 +1,6 @@
-import { Music } from "../models/music";
+import { Music, CURRENT_METADATA_VERSION } from "../models/music";
+import { MusicMetadataStorage } from "../storage/music/metadata";
+import { MusicSettingsStorage } from "../storage/music/settings";
 import { formatSec } from "../utils/format";
 import type { TypedEvent } from "../utils/types";
 
@@ -39,12 +41,30 @@ export class MusicListElement extends HTMLElement {
   }
 
   async #toWillMaybeLiFragment(file: File) {
-    const result = await Music.parse(file);
+    const buffer = await file.arrayBuffer();
+    const id = await Music.id(buffer);
+
+    const savedMetadata = MusicMetadataStorage.get(id);
+    const savedSettings = MusicSettingsStorage.get(id);
+    const isOldMetadata = savedMetadata != null && savedMetadata.version < CURRENT_METADATA_VERSION;
+
+    if (savedMetadata && savedSettings && !isOldMetadata) {
+      const music = { id, file, metadata: savedMetadata, settings: savedSettings };
+      return this.#buildLiFragment(music);
+    }
+
+    const result = await Music.parse(id, buffer, file);
 
     // TODO: make some announcement
     switch (result.kind) {
       case "ok": {
         const { music } = result;
+        if (!savedMetadata || isOldMetadata) {
+          MusicMetadataStorage.set(id, music.metadata);
+        }
+        if (!savedSettings) {
+          MusicSettingsStorage.set(id, music.settings);
+        }
         return this.#buildLiFragment(music);
       }
       case "invalid-loop":
