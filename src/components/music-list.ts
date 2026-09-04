@@ -39,11 +39,29 @@ export class MusicListElement extends HTMLElement {
   }
 
   async #toWillMaybeLiFragment(file: File) {
-    const music = await Music.parse(file);
+    const result = await Music.parse(file);
 
     // TODO: make some announcement
-    if (!music) return;
+    switch (result.kind) {
+      case "ok": {
+        const { music } = result;
+        return this.#buildLiFragment(music);
+      }
+      case "invalid-loop":
+        console.error(result.message, file.name);
+        break;
+      case "unreadable":
+        console.error(result.cause, file.name);
+        break;
+      case "no-duration":
+        console.error("failed to parse duration", file.name);
+        break;
+      default:
+        throw new Error(result satisfies never);
+    }
+  }
 
+  #buildLiFragment(music: Music) {
     const liFragment = this.#liTemplate.content.cloneNode(true) as DocumentFragment;
     const li = liFragment.firstElementChild!;
     const [_, button] = li.children;

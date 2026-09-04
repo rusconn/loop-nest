@@ -39,8 +39,14 @@ export type Settings = {
 
 const CURRENT_METADATA_VERSION = 2;
 
+export type ParseResult =
+  | { kind: "ok"; music: Music }
+  | { kind: "invalid-loop"; music: Music; message: string }
+  | { kind: "no-duration" }
+  | { kind: "unreadable"; cause: unknown };
+
 export const Music = {
-  async parse(file: File): Promise<Music | undefined> {
+  async parse(file: File): Promise<ParseResult> {
     const buffer = await file.arrayBuffer();
     const id = `music-${await hash("SHA-1", buffer)}` as const;
     const savedMetadata = MusicMetadataStorage.get(id);
@@ -51,65 +57,85 @@ export const Music = {
       (!("version" in savedMetadata) || savedMetadata.version < CURRENT_METADATA_VERSION);
 
     if (savedMetadata && savedSettings && !isOldMetadata) {
-      return { id, file, metadata: savedMetadata, settings: savedSettings };
+      return { kind: "ok", music: { id, file, metadata: savedMetadata, settings: savedSettings } };
     }
 
+    let rawMetadata: IAudioMetadata;
     try {
-      const rawMetadata = await parseBuffer(new Uint8Array(buffer), file.type, {
+      rawMetadata = await parseBuffer(new Uint8Array(buffer), file.type, {
         skipCovers: true,
         duration: true,
       });
-      const { duration } = rawMetadata.format;
-      if (duration == null) {
-        return undefined;
-      }
-
-      const metadata = parseMetadata(rawMetadata, duration, file.name);
-      const settings = savedSettings ?? { volume: 1, tempo: 1 };
-
-      if (!savedMetadata || isOldMetadata) {
-        MusicMetadataStorage.set(id, metadata);
-      }
-      if (!savedSettings) {
-        MusicSettingsStorage.set(id, settings);
-      }
-
-      return { id, file, metadata, settings };
     } catch (e) {
-      console.error(e);
-      return undefined;
+      return { kind: "unreadable", cause: e };
     }
+
+    const { duration } = rawMetadata.format;
+    if (duration == null) {
+      return { kind: "no-duration" };
+    }
+
+    const { metadata, loopError } = parseMetadata(rawMetadata, duration, file.name);
+    const settings = savedSettings ?? { volume: 1, tempo: 1 };
+
+    const music: Music = { id, file, metadata, settings };
+
+    if (loopError != null) {
+      return { kind: "invalid-loop", music, message: loopError };
+    }
+
+    if (!savedMetadata || isOldMetadata) {
+      MusicMetadataStorage.set(id, metadata);
+    }
+    if (!savedSettings) {
+      MusicSettingsStorage.set(id, settings);
+    }
+
+    return { kind: "ok", music };
   },
 };
 
-function parseMetadata(raw: IAudioMetadata, duration: number, defaultTitle: string): Metadata {
+function parseMetadata(
+  raw: IAudioMetadata,
+  duration: number,
+  defaultTitle: string,
+): { metadata: Metadata; loopError?: string } {
   const { common, format, native } = raw;
-  const loopInfo = parseLoopInfo(format.sampleRate, native.vorbis, duration);
+  const result = parseLoopInfo(format.sampleRate, native.vorbis, duration);
 
   return {
-    version: CURRENT_METADATA_VERSION,
-    common: {
-      title: common.title?.trim() || defaultTitle,
-      artist: common.artist?.trim(),
-      album: common.album?.trim(),
+    metadata: {
+      version: CURRENT_METADATA_VERSION,
+      common: {
+        title: common.title?.trim() || defaultTitle,
+        artist: common.artist?.trim(),
+        album: common.album?.trim(),
+      },
+      format: {
+        duration,
+        sampleRate: format.sampleRate,
+      },
+      ...(result.kind === "ok" && {
+        loopInfo: result.loopInfo,
+      }),
     },
-    format: {
-      duration,
-      sampleRate: format.sampleRate,
-    },
-    ...(loopInfo != null && {
-      loopInfo,
+    ...(result.kind === "err" && {
+      loopError: result.message,
     }),
   };
 }
+
+type ParseLoopInfoResult =
+  | { kind: "ok"; loopInfo?: Metadata["loopInfo"] } //
+  | { kind: "err"; message: string };
 
 function parseLoopInfo(
   sampleRate: number | undefined,
   vorbis: IAudioMetadata["native"]["vorbis"],
   duration: number,
-): Metadata["loopInfo"] {
+): ParseLoopInfoResult {
   if (!sampleRate || !vorbis) {
-    return;
+    return { kind: "ok" };
   }
 
   const start = parseTagAsNumber(vorbis, "LOOPSTART");
@@ -117,46 +143,48 @@ function parseLoopInfo(
   const end = parseTagAsNumber(vorbis, "LOOPEND");
 
   if (start == null && length == null && end == null) {
-    return;
+    return { kind: "ok" };
   }
 
   if (start == null) {
-    throw new Error("LOOPLENGTH/LOOPEND present but no LOOPSTART given");
+    return { kind: "err", message: "LOOPLENGTH/LOOPEND present but no LOOPSTART given" };
   }
   if (length == null && end == null) {
-    throw new Error("LOOPSTART present but neither LOOPLENGTH nor LOOPEND given");
+    return { kind: "err", message: "LOOPSTART present but neither LOOPLENGTH nor LOOPEND given" };
   }
 
   if (!isValidLoopPoint(start)) {
-    throw new Error(`invalid LOOPSTART: ${start}`);
+    return { kind: "err", message: `invalid LOOPSTART: ${start}` };
   }
 
   const startSec = start / sampleRate;
 
   if (length != null) {
     if (!isValidLoopPoint(length)) {
-      throw new Error(`invalid LOOPLENGTH: ${length}`);
+      return { kind: "err", message: `invalid LOOPLENGTH: ${length}` };
     }
     const endSec = (start + length) / sampleRate;
     if (!isInsideRound(endSec, duration)) {
-      throw new Error(`LOOPSTART + LOOPLENGTH is out of range: ${endSec}`);
+      return { kind: "err", message: `LOOPSTART + LOOPLENGTH is out of range: ${endSec}` };
     }
-    return { start: startSec, end: endSec };
+    return { kind: "ok", loopInfo: { start: startSec, end: endSec } };
   }
 
   if (end != null) {
     if (!isValidLoopPoint(end)) {
-      throw new Error(`invalid LOOPEND: ${end}`);
+      return { kind: "err", message: `invalid LOOPEND: ${end}` };
     }
     if (start > end) {
-      throw new Error(`LOOPEND is before LOOPSTART: ${end}`);
+      return { kind: "err", message: `LOOPEND is before LOOPSTART: ${end}` };
     }
     const endSec = end / sampleRate;
     if (!isInsideRound(endSec, duration)) {
-      throw new Error(`LOOPEND is out of range: ${endSec}`);
+      return { kind: "err", message: `LOOPEND is out of range: ${endSec}` };
     }
-    return { start: startSec, end: endSec };
+    return { kind: "ok", loopInfo: { start: startSec, end: endSec } };
   }
+
+  throw new Error("unreachable");
 }
 
 function parseTagAsNumber(tags: IAudioMetadata["native"]["any"], tagId: string) {
