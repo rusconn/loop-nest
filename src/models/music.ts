@@ -4,7 +4,7 @@ import { hash } from "../lib/hash";
 
 export type Music = {
   id: MusicId;
-  file: File;
+  buffer: ArrayBuffer;
   metadata: Metadata;
   settings: Settings;
 };
@@ -48,10 +48,15 @@ export const Music = {
     return `music-${await hash("SHA-1", buffer)}`;
   },
 
-  async parse(id: MusicId, buffer: ArrayBuffer, file: File): Promise<ParseResult> {
+  async parse(
+    id: MusicId,
+    buffer: ArrayBuffer,
+    mimeType: string,
+    fileName: string,
+  ): Promise<ParseResult> {
     let rawMetadata: IAudioMetadata;
     try {
-      rawMetadata = await parseBuffer(new Uint8Array(buffer), file.type, {
+      rawMetadata = await parseBuffer(new Uint8Array(buffer), mimeType, {
         skipCovers: true,
         duration: true,
       });
@@ -64,9 +69,9 @@ export const Music = {
       return { kind: "no-duration" };
     }
 
-    const { metadata, loopError } = parseMetadata(rawMetadata, duration, file.name);
+    const { metadata, loopError } = parseMetadata(rawMetadata, duration, fileName);
     const settings: Settings = { volume: 1, tempo: 1 };
-    const music: Music = { id, file, metadata, settings };
+    const music: Music = { id, buffer, metadata, settings };
 
     if (loopError != null) {
       return { kind: "invalid-loop", music, message: loopError };

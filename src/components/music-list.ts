@@ -49,11 +49,11 @@ export class MusicListElement extends HTMLElement {
     const isOldMetadata = savedMetadata != null && savedMetadata.version < CURRENT_METADATA_VERSION;
 
     if (savedMetadata && savedSettings && !isOldMetadata) {
-      const music = { id, file, metadata: savedMetadata, settings: savedSettings };
+      const music: Music = { id, buffer, metadata: savedMetadata, settings: savedSettings };
       return this.#buildLiFragment(music);
     }
 
-    const result = await Music.parse(id, buffer, file);
+    const result = await Music.parse(id, buffer, file.type, file.name);
 
     // TODO: make some announcement
     switch (result.kind) {

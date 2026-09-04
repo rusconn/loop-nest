@@ -157,14 +157,13 @@ export class MusicPlayerElement extends HTMLElement {
     this.setAttribute("inert", "");
     this.#pauseUI();
 
-    const { file, metadata } = music;
+    const { buffer, metadata } = music;
     const { format, loopInfo } = metadata;
     const { duration } = format;
-    const musicBytes = await file.arrayBuffer();
 
     console.log(loopInfo ?? "none");
 
-    const result = await this.#audioPlayer.load(musicBytes, duration, {
+    const result = await this.#audioPlayer.load(buffer, duration, {
       ...music.settings,
       loop: loopInfo ?? true,
     });
