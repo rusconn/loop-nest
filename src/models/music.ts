@@ -13,7 +13,7 @@ export type Music = {
 
 export type MusicId = `music-${string}`;
 
-export type MetadataPossiblyOld = IAudioMetadata | Metadata;
+export type MetadataPossiblyOld = Metadata;
 
 export type Metadata = {
   version: number;
@@ -52,9 +52,7 @@ export const Music = {
     const savedMetadata = MusicMetadataStorage.get(id);
     const savedSettings = MusicSettingsStorage.get(id);
 
-    const isOldMetadata =
-      savedMetadata != null &&
-      (!("version" in savedMetadata) || savedMetadata.version < CURRENT_METADATA_VERSION);
+    const isOldMetadata = savedMetadata != null && savedMetadata.version < CURRENT_METADATA_VERSION;
 
     if (savedMetadata && savedSettings && !isOldMetadata) {
       return { kind: "ok", music: { id, file, metadata: savedMetadata, settings: savedSettings } };

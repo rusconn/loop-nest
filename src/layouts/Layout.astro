@@ -54,10 +54,6 @@ import { pwaInfo } from "virtual:pwa-info";
 </style>
 
 <script>
-  import * as StorageMigrator from "../storage/migrator";
-
-  StorageMigrator.migrateIfNeeded();
-
   const isMobile = /iPhone|Android|Mobile|iPad|iPod/i.test(navigator.userAgent);
 
   if (isMobile) {
