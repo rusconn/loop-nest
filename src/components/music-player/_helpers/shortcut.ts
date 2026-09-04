@@ -8,14 +8,6 @@ type Shortcut =
   | "down-tempo"
   | "up-tempo";
 
-export function parse(e: KeyboardEvent): Shortcut | undefined {
-  return keyStringShortcutMap[keyString(e)];
-}
-
-function keyString(e: KeyboardEvent): KeyAsString {
-  return `${e.shiftKey}-${e.metaKey}-${e.key}`;
-}
-
 type KeyAsString = `${Shift}-${Meta}-${string}`;
 type Shift = boolean;
 type Meta = boolean;
@@ -31,3 +23,13 @@ const keyStringShortcutMap: Record<KeyAsString, Shortcut> = {
   "true-false-ArrowDown": "down-tempo",
   "true-false-ArrowUp": "up-tempo",
 };
+
+export const Shortcut = {
+  parse(e: KeyboardEvent): Shortcut | undefined {
+    return keyStringShortcutMap[keyString(e)];
+  },
+};
+
+function keyString(e: KeyboardEvent): KeyAsString {
+  return `${e.shiftKey}-${e.metaKey}-${e.key}`;
+}

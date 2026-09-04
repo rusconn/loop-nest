@@ -1,8 +1,8 @@
 import { parseBuffer, type IAudioMetadata } from "music-metadata";
 
 import { hash } from "../lib/hash";
-import * as MusicMetadataStorage from "../storage/music/metadata";
-import * as MusicSettingsStorage from "../storage/music/settings";
+import { MusicMetadataStorage } from "../storage/music/metadata";
+import { MusicSettingsStorage } from "../storage/music/settings";
 
 export type Music = {
   id: MusicId;
@@ -39,46 +39,48 @@ export type Settings = {
 
 const CURRENT_METADATA_VERSION = 1;
 
-export async function parse(file: File): Promise<Music | undefined> {
-  const buffer = await file.arrayBuffer();
-  const id = `music-${await hash("SHA-1", buffer)}` as const;
-  const savedMetadata = MusicMetadataStorage.get(id);
-  const savedSettings = MusicSettingsStorage.get(id);
+export const Music = {
+  async parse(file: File): Promise<Music | undefined> {
+    const buffer = await file.arrayBuffer();
+    const id = `music-${await hash("SHA-1", buffer)}` as const;
+    const savedMetadata = MusicMetadataStorage.get(id);
+    const savedSettings = MusicSettingsStorage.get(id);
 
-  const isOldMetadata =
-    savedMetadata != null &&
-    (!("version" in savedMetadata) || savedMetadata.version < CURRENT_METADATA_VERSION);
+    const isOldMetadata =
+      savedMetadata != null &&
+      (!("version" in savedMetadata) || savedMetadata.version < CURRENT_METADATA_VERSION);
 
-  if (savedMetadata && savedSettings && !isOldMetadata) {
-    return { id, file, metadata: savedMetadata, settings: savedSettings };
-  }
+    if (savedMetadata && savedSettings && !isOldMetadata) {
+      return { id, file, metadata: savedMetadata, settings: savedSettings };
+    }
 
-  try {
-    const rawMetadata = await parseBuffer(new Uint8Array(buffer), file.type, {
-      skipCovers: true,
-      duration: true,
-    });
-    const { duration } = rawMetadata.format;
-    if (duration == null) {
+    try {
+      const rawMetadata = await parseBuffer(new Uint8Array(buffer), file.type, {
+        skipCovers: true,
+        duration: true,
+      });
+      const { duration } = rawMetadata.format;
+      if (duration == null) {
+        return undefined;
+      }
+
+      const metadata = createMetadata(rawMetadata, duration, file.name);
+      const settings = savedSettings ?? { volume: 1, tempo: 1 };
+
+      if (!savedMetadata || isOldMetadata) {
+        MusicMetadataStorage.set(id, metadata);
+      }
+      if (!savedSettings) {
+        MusicSettingsStorage.set(id, settings);
+      }
+
+      return { id, file, metadata, settings };
+    } catch (e) {
+      console.error(e);
       return undefined;
     }
-
-    const metadata = createMetadata(rawMetadata, duration, file.name);
-    const settings = savedSettings ?? { volume: 1, tempo: 1 };
-
-    if (!savedMetadata || isOldMetadata) {
-      MusicMetadataStorage.set(id, metadata);
-    }
-    if (!savedSettings) {
-      MusicSettingsStorage.set(id, settings);
-    }
-
-    return { id, file, metadata, settings };
-  } catch (e) {
-    console.error(e);
-    return undefined;
-  }
-}
+  },
+};
 
 function createMetadata(raw: IAudioMetadata, duration: number, defaultTitle: string): Metadata {
   const { common, format, native } = raw;

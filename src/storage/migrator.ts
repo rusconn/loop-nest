@@ -1,6 +1,6 @@
 import type { Metadata, MusicId, Settings } from "../models/music";
-import * as MusicMetadataStorage from "./music/metadata";
-import * as MusicSettingsStorage from "./music/settings";
+import { MusicMetadataStorage } from "./music/metadata";
+import { MusicSettingsStorage } from "./music/settings";
 
 type Version = "1" | "2";
 

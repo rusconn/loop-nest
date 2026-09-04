@@ -1,4 +1,4 @@
-import * as Music from "../models/music";
+import { Music } from "../models/music";
 import { formatSec } from "../utils/format";
 import type { TypedEvent } from "../utils/types";
 
@@ -18,13 +18,13 @@ type MusicListEventMap = {
 
 type MusicListEvent<Detail = unknown> = TypedEvent<MusicListElement, Detail>;
 
-type SelectDetail = { music: Music.Music };
+type SelectDetail = { music: Music };
 
 export class MusicListElement extends HTMLElement {
   #ul!: HTMLUListElement;
   #liTemplate!: HTMLTemplateElement;
 
-  #loadedMusic: Music.Music | undefined;
+  #loadedMusic: Music | undefined;
 
   connectedCallback() {
     this.#ul = this.querySelector("ul")!;
@@ -63,7 +63,7 @@ export class MusicListElement extends HTMLElement {
     return liFragment;
   }
 
-  startLoading(music: Music.Music) {
+  startLoading(music: Music) {
     this.#ul.setAttribute("inert", "");
 
     if (this.#loadedMusic) {
@@ -79,7 +79,7 @@ export class MusicListElement extends HTMLElement {
     }
   }
 
-  completeLoading(music: Music.Music) {
+  completeLoading(music: Music) {
     const loading = this.#queryLoadingIndicator(music);
     if (loading) {
       loading.hidden = true;
@@ -95,7 +95,7 @@ export class MusicListElement extends HTMLElement {
     this.#ul.removeAttribute("inert");
   }
 
-  failLoading(music: Music.Music) {
+  failLoading(music: Music) {
     const loading = this.#queryLoadingIndicator(music);
     if (loading) {
       loading.hidden = true;
@@ -105,15 +105,15 @@ export class MusicListElement extends HTMLElement {
     this.#ul.removeAttribute("inert");
   }
 
-  #queryLoadingIndicator(music: Music.Music) {
+  #queryLoadingIndicator(music: Music) {
     return this.#queryRow(music)?.querySelector<HTMLElement>(".loading-indicator");
   }
 
-  #queryLoadedIndicator(music: Music.Music) {
+  #queryLoadedIndicator(music: Music) {
     return this.#queryRow(music)?.querySelector<HTMLElement>(".loaded-indicator");
   }
 
-  #queryRow(music: Music.Music) {
+  #queryRow(music: Music) {
     return this.querySelector(`li[data-id=${music.id}]`);
   }
 

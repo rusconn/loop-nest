@@ -1,6 +1,6 @@
 import { AudioPlayer } from "../lib/audio-player";
-import * as Music from "../models/music";
-import * as MusicSettingsStorage from "../storage/music/settings";
+import type { Music } from "../models/music";
+import { MusicSettingsStorage } from "../storage/music/settings";
 import type { TypedEvent } from "../utils/types";
 import {
   ShortcutKeyHandler,
@@ -36,11 +36,11 @@ type MusicPlayerEventMap = {
 
 type MusicPlayerEvent<Detail = unknown> = TypedEvent<MusicPlayerElement, Detail>;
 
-type PlayDetail = { music: Music.Music };
-type PauseDetail = { music: Music.Music };
-type StartLoadingDetail = { music: Music.Music };
-type CompleteLoadingDetail = { music: Music.Music };
-type FailLoadingDetail = { music: Music.Music };
+type PlayDetail = { music: Music };
+type PauseDetail = { music: Music };
+type StartLoadingDetail = { music: Music };
+type CompleteLoadingDetail = { music: Music };
+type FailLoadingDetail = { music: Music };
 
 export class MusicPlayerElement extends HTMLElement {
   #mediaSession!: MediaSessionElement;
@@ -51,7 +51,7 @@ export class MusicPlayerElement extends HTMLElement {
   #shortcutKey!: ShortcutKeyHandler;
 
   #audioPlayer = new AudioPlayer();
-  #loadedMusic: Music.Music | undefined;
+  #loadedMusic: Music | undefined;
   #updateDisplayRequestId = 0;
   #framesUntilUpdate = 0;
 
@@ -151,7 +151,7 @@ export class MusicPlayerElement extends HTMLElement {
     this.#shortcutKey.unregister();
   }
 
-  async load(music: Music.Music) {
+  async load(music: Music) {
     this.#dispatchEvent("music-player:start-loading", { music });
 
     this.setAttribute("inert", "");
@@ -362,7 +362,7 @@ export class MusicPlayerElement extends HTMLElement {
     this.#stopUpdateCurrentTime();
   }
 
-  #loadToUI(music: Music.Music) {
+  #loadToUI(music: Music) {
     const { metadata, settings } = music;
     const { format } = metadata;
 
@@ -373,7 +373,7 @@ export class MusicPlayerElement extends HTMLElement {
     this.#controlsFieldset.disabled = false;
   }
 
-  #loadToMediaSession(music: Music.Music) {
+  #loadToMediaSession(music: Music) {
     this.#mediaSession.loadMetadata(music.metadata.common);
   }
 
