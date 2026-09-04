@@ -37,7 +37,7 @@ export type Settings = {
   tempo: number;
 };
 
-const CURRENT_METADATA_VERSION = 1;
+const CURRENT_METADATA_VERSION = 2;
 
 export const Music = {
   async parse(file: File): Promise<Music | undefined> {
@@ -64,7 +64,7 @@ export const Music = {
         return undefined;
       }
 
-      const metadata = createMetadata(rawMetadata, duration, file.name);
+      const metadata = parseMetadata(rawMetadata, duration, file.name);
       const settings = savedSettings ?? { volume: 1, tempo: 1 };
 
       if (!savedMetadata || isOldMetadata) {
@@ -82,9 +82,9 @@ export const Music = {
   },
 };
 
-function createMetadata(raw: IAudioMetadata, duration: number, defaultTitle: string): Metadata {
+function parseMetadata(raw: IAudioMetadata, duration: number, defaultTitle: string): Metadata {
   const { common, format, native } = raw;
-  const loopInfo = getLoopInfo(format.sampleRate, native.vorbis);
+  const loopInfo = parseLoopInfo(format.sampleRate, native.vorbis, duration);
 
   return {
     version: CURRENT_METADATA_VERSION,
@@ -97,31 +97,77 @@ function createMetadata(raw: IAudioMetadata, duration: number, defaultTitle: str
       duration,
       sampleRate: format.sampleRate,
     },
-    loopInfo,
+    ...(loopInfo != null && {
+      loopInfo,
+    }),
   };
 }
 
-function getLoopInfo(
+function parseLoopInfo(
   sampleRate: number | undefined,
   vorbis: IAudioMetadata["native"]["vorbis"],
+  duration: number,
 ): Metadata["loopInfo"] {
-  if (!sampleRate || !vorbis) return;
+  if (!sampleRate || !vorbis) {
+    return;
+  }
 
   const start = parseTagAsNumber(vorbis, "LOOPSTART");
   const length = parseTagAsNumber(vorbis, "LOOPLENGTH");
   const end = parseTagAsNumber(vorbis, "LOOPEND");
 
-  if (start != null) {
-    if (length != null) {
-      return { start: start / sampleRate, end: (start + length) / sampleRate };
+  if (start == null && length == null && end == null) {
+    return;
+  }
+
+  if (start == null) {
+    throw new Error("LOOPLENGTH/LOOPEND present but no LOOPSTART given");
+  }
+  if (length == null && end == null) {
+    throw new Error("LOOPSTART present but neither LOOPLENGTH nor LOOPEND given");
+  }
+
+  if (!isValidLoopPoint(start)) {
+    throw new Error(`invalid LOOPSTART: ${start}`);
+  }
+
+  const startSec = start / sampleRate;
+
+  if (length != null) {
+    if (!isValidLoopPoint(length)) {
+      throw new Error(`invalid LOOPLENGTH: ${length}`);
     }
-    if (end != null) {
-      return { start: start / sampleRate, end: end / sampleRate };
+    const endSec = (start + length) / sampleRate;
+    if (!isInsideRound(endSec, duration)) {
+      throw new Error(`LOOPSTART + LOOPLENGTH is out of range: ${endSec}`);
     }
+    return { start: startSec, end: endSec };
+  }
+
+  if (end != null) {
+    if (!isValidLoopPoint(end)) {
+      throw new Error(`invalid LOOPEND: ${end}`);
+    }
+    if (start > end) {
+      throw new Error(`LOOPEND is before LOOPSTART: ${end}`);
+    }
+    const endSec = end / sampleRate;
+    if (!isInsideRound(endSec, duration)) {
+      throw new Error(`LOOPEND is out of range: ${endSec}`);
+    }
+    return { start: startSec, end: endSec };
   }
 }
 
 function parseTagAsNumber(tags: IAudioMetadata["native"]["any"], tagId: string) {
   const tag = tags.find((tag) => tag.id === tagId);
   return tag && Number(tag.value);
+}
+
+function isValidLoopPoint(value: number) {
+  return Number.isFinite(value) && 0 <= value;
+}
+
+function isInsideRound(second: number, duration: number) {
+  return 0 < second && second <= duration;
 }
