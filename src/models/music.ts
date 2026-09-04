@@ -138,50 +138,50 @@ function parseLoopInfo(
     return { kind: "ok" };
   }
 
-  const start = parseTagAsNumber(vorbis, "LOOPSTART");
-  const length = parseTagAsNumber(vorbis, "LOOPLENGTH");
-  const end = parseTagAsNumber(vorbis, "LOOPEND");
+  const loopStart = parseTagAsNumber(vorbis, "LOOPSTART");
+  const loopLength = parseTagAsNumber(vorbis, "LOOPLENGTH");
+  const loopEnd = parseTagAsNumber(vorbis, "LOOPEND");
 
-  if (start == null && length == null && end == null) {
-    return { kind: "ok" };
+  if (loopStart == null && loopLength == null && loopEnd == null) {
+    return { kind: "ok", loopInfo: undefined };
   }
 
-  if (start == null) {
+  if (loopStart == null) {
     return { kind: "err", message: "LOOPLENGTH/LOOPEND present but no LOOPSTART given" };
   }
-  if (length == null && end == null) {
+  if (loopLength == null && loopEnd == null) {
     return { kind: "err", message: "LOOPSTART present but neither LOOPLENGTH nor LOOPEND given" };
   }
 
-  if (!isValidLoopPoint(start)) {
-    return { kind: "err", message: `invalid LOOPSTART: ${start}` };
+  if (!isValidLoopPoint(loopStart)) {
+    return { kind: "err", message: `invalid LOOPSTART: ${loopStart}` };
   }
 
-  const startSec = start / sampleRate;
+  const start = loopStart / sampleRate;
 
-  if (length != null) {
-    if (!isValidLoopPoint(length)) {
-      return { kind: "err", message: `invalid LOOPLENGTH: ${length}` };
+  if (loopLength != null) {
+    if (!isValidLoopPoint(loopLength)) {
+      return { kind: "err", message: `invalid LOOPLENGTH: ${loopLength}` };
     }
-    const endSec = (start + length) / sampleRate;
-    if (!isInsideRound(endSec, duration)) {
-      return { kind: "err", message: `LOOPSTART + LOOPLENGTH is out of range: ${endSec}` };
+    const end = (loopStart + loopLength) / sampleRate;
+    if (!isInsideRound(end, duration)) {
+      return { kind: "err", message: `LOOPSTART + LOOPLENGTH is out of range: ${end}` };
     }
-    return { kind: "ok", loopInfo: { start: startSec, end: endSec } };
+    return { kind: "ok", loopInfo: { start, end } };
   }
 
-  if (end != null) {
-    if (!isValidLoopPoint(end)) {
-      return { kind: "err", message: `invalid LOOPEND: ${end}` };
+  if (loopEnd != null) {
+    if (!isValidLoopPoint(loopEnd)) {
+      return { kind: "err", message: `invalid LOOPEND: ${loopEnd}` };
     }
-    if (start > end) {
-      return { kind: "err", message: `LOOPEND is before LOOPSTART: ${end}` };
+    if (loopStart > loopEnd) {
+      return { kind: "err", message: `LOOPEND is before LOOPSTART: ${loopEnd}` };
     }
-    const endSec = end / sampleRate;
-    if (!isInsideRound(endSec, duration)) {
-      return { kind: "err", message: `LOOPEND is out of range: ${endSec}` };
+    const end = loopEnd / sampleRate;
+    if (!isInsideRound(end, duration)) {
+      return { kind: "err", message: `LOOPEND is out of range: ${end}` };
     }
-    return { kind: "ok", loopInfo: { start: startSec, end: endSec } };
+    return { kind: "ok", loopInfo: { start, end } };
   }
 
   throw new Error("unreachable");
