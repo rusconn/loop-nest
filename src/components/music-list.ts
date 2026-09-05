@@ -1,4 +1,4 @@
-import { Music, CURRENT_METADATA_VERSION } from "../models/music";
+import { Music } from "../models/music";
 import { MusicMetadataStorage } from "../storage/music/metadata";
 import { MusicSettingsStorage } from "../storage/music/settings";
 import { formatSec } from "../utils/format";
@@ -46,7 +46,8 @@ export class MusicListElement extends HTMLElement {
 
     const savedMetadata = MusicMetadataStorage.get(id);
     const savedSettings = MusicSettingsStorage.get(id);
-    const isOldMetadata = savedMetadata != null && savedMetadata.version < CURRENT_METADATA_VERSION;
+    const isOldMetadata =
+      savedMetadata != null && savedMetadata.version < Music.CURRENT_METADATA_VERSION;
 
     if (savedMetadata && savedSettings && !isOldMetadata) {
       const music: Music = { id, buffer, metadata: savedMetadata, settings: savedSettings };

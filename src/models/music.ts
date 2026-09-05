@@ -35,8 +35,6 @@ export type Settings = {
   tempo: number;
 };
 
-export const CURRENT_METADATA_VERSION = 2;
-
 export type ParseResult =
   | { kind: "ok"; music: Music }
   | { kind: "invalid-loop"; music: Music; message: string }
@@ -44,6 +42,8 @@ export type ParseResult =
   | { kind: "unreadable"; cause: unknown };
 
 export const Music = {
+  CURRENT_METADATA_VERSION: 2,
+
   async id(buffer: ArrayBuffer): Promise<MusicId> {
     return `music-${await hash("SHA-1", buffer)}`;
   },
@@ -91,7 +91,7 @@ function parseMetadata(
 
   return {
     metadata: {
-      version: CURRENT_METADATA_VERSION,
+      version: Music.CURRENT_METADATA_VERSION,
       common: {
         title: common.title?.trim() || defaultTitle,
         artist: common.artist?.trim(),
