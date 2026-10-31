@@ -22,7 +22,7 @@
     "deploy": "firebase deploy --project loop-nest"
   },
   "dependencies": {
-    "music-metadata": "11.13.0"
+    "music-metadata": "12.3.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
