@@ -19,7 +19,7 @@ export type LoadOptions = {
 };
 
 type LoadResult =
-  | { type: "success" }
+  | { type: "success" } //
   | { type: "failed"; cause: DOMException }
   | { type: "unsupported" };
 
@@ -32,7 +32,7 @@ type PauseResult =
   | { type: "unsupported" };
 
 type TogglePlayingResult =
-  | { type: "success"; current: "playing" | "paused" }
+  | { type: "success"; current: "playing" | "paused" } //
   | { type: "unsupported" };
 
 type SeekToResult =
