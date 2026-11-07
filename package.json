@@ -18,7 +18,7 @@
     "dev": "astro dev",
     "check": "astro check && prettier --cache --check .",
     "build": "astro build",
-    "preview": "firebase serve --project loop-nest",
+    "preview": "firebase emulators:start --only hosting --project loop-nest",
     "deploy": "firebase deploy --project loop-nest"
   },
   "dependencies": {
