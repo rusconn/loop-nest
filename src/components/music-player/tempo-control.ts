@@ -1,25 +1,4 @@
-import type { TypedEvent } from "../../utils/types";
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "tempo-control": TempoControlElement;
-  }
-
-  interface GlobalEventHandlersEventMap {
-    "tempo-control:reset": TempoControlEvent<ResetDetail>;
-    "tempo-control:seek": TempoControlEvent<SeekDetail>;
-  }
-}
-
-type TempoControlEventMap = {
-  "tempo-control:reset": CustomEvent<ResetDetail>;
-  "tempo-control:seek": CustomEvent<SeekDetail>;
-};
-
-type TempoControlEvent<Detail = unknown> = TypedEvent<TempoControlElement, Detail>;
-
-type ResetDetail = {};
-type SeekDetail = { tempo: number };
+import type { TempoControlEventMap } from "../../types/custom-elements";
 
 export class TempoControlElement extends HTMLElement {
   #trigger!: HTMLButtonElement;

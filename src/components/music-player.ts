@@ -1,7 +1,6 @@
 import { AudioPlayer } from "../lib/audio-player";
 import type { Music } from "../models/music";
 import { MusicSettingsStorage } from "../storage/music/settings";
-import type { TypedEvent } from "../utils/types";
 import {
   ShortcutKeyHandler,
   type ShortcutKeyHandlerEventMap,
@@ -11,36 +10,7 @@ import type { PlayControlElement } from "./music-player/play-control";
 import type { VolumeControlElement } from "./music-player/volume-control";
 import type { TempoControlElement } from "./music-player/tempo-control";
 import { clamp } from "../lib/math";
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "music-player": MusicPlayerElement;
-  }
-
-  interface GlobalEventHandlersEventMap {
-    "music-player:play": MusicPlayerEvent<PlayDetail>;
-    "music-player:pause": MusicPlayerEvent<PauseDetail>;
-    "music-player:start-loading": MusicPlayerEvent<StartLoadingDetail>;
-    "music-player:complete-loading": MusicPlayerEvent<CompleteLoadingDetail>;
-    "music-player:fail-loading": MusicPlayerEvent<FailLoadingDetail>;
-  }
-}
-
-type MusicPlayerEventMap = {
-  "music-player:play": CustomEvent<PlayDetail>;
-  "music-player:pause": CustomEvent<PauseDetail>;
-  "music-player:start-loading": CustomEvent<StartLoadingDetail>;
-  "music-player:complete-loading": CustomEvent<CompleteLoadingDetail>;
-  "music-player:fail-loading": CustomEvent<FailLoadingDetail>;
-};
-
-type MusicPlayerEvent<Detail = unknown> = TypedEvent<MusicPlayerElement, Detail>;
-
-type PlayDetail = { music: Music };
-type PauseDetail = { music: Music };
-type StartLoadingDetail = { music: Music };
-type CompleteLoadingDetail = { music: Music };
-type FailLoadingDetail = { music: Music };
+import type { MusicPlayerEventMap } from "../types/custom-elements";
 
 export class MusicPlayerElement extends HTMLElement {
   #mediaSession!: MediaSessionElement;

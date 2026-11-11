@@ -2,25 +2,7 @@ import { Music } from "../models/music";
 import { MusicMetadataStorage } from "../storage/music/metadata";
 import { MusicSettingsStorage } from "../storage/music/settings";
 import { formatSec } from "../utils/format";
-import type { TypedEvent } from "../utils/types";
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "music-list": MusicListElement;
-  }
-
-  interface GlobalEventHandlersEventMap {
-    "music-list:select": MusicListEvent<SelectDetail>;
-  }
-}
-
-type MusicListEventMap = {
-  "music-list:select": CustomEvent<SelectDetail>;
-};
-
-type MusicListEvent<Detail = unknown> = TypedEvent<MusicListElement, Detail>;
-
-type SelectDetail = { music: Music };
+import type { MusicListEventMap } from "../types/custom-elements";
 
 export class MusicListElement extends HTMLElement {
   #ul!: HTMLUListElement;

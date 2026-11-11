@@ -1,25 +1,4 @@
-import type { TypedEvent } from "../../utils/types";
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "volume-control": VolumeControlElement;
-  }
-
-  interface GlobalEventHandlersEventMap {
-    "volume-control:toggle": VolumeControlEvent<ToggleDetail>;
-    "volume-control:seek": VolumeControlEvent<SeekDetail>;
-  }
-}
-
-type VolumeControlEventMap = {
-  "volume-control:toggle": CustomEvent<ToggleDetail>;
-  "volume-control:seek": CustomEvent<SeekDetail>;
-};
-
-type VolumeControlEvent<Detail = unknown> = TypedEvent<VolumeControlElement, Detail>;
-
-type ToggleDetail = {};
-type SeekDetail = { volume: number };
+import type { VolumeControlEventMap } from "../../types/custom-elements";
 
 export class VolumeControlElement extends HTMLElement {
   #trigger!: HTMLButtonElement;

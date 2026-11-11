@@ -1,26 +1,5 @@
 import { formatSec } from "../../utils/format";
-import type { TypedEvent } from "../../utils/types";
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "play-control": PlayControlElement;
-  }
-
-  interface GlobalEventHandlersEventMap {
-    "play-control:toggle": PlayControlEvent<ToggleDetail>;
-    "play-control:seek": PlayControlEvent<SeekDetail>;
-  }
-}
-
-type PlayControlEventMap = {
-  "play-control:toggle": CustomEvent<ToggleDetail>;
-  "play-control:seek": CustomEvent<SeekDetail>;
-};
-
-type PlayControlEvent<Detail = unknown> = TypedEvent<PlayControlElement, Detail>;
-
-type ToggleDetail = {};
-type SeekDetail = { second: number };
+import type { PlayControlEventMap } from "../../types/custom-elements";
 
 export class PlayControlElement extends HTMLElement {
   #playPause!: HTMLButtonElement;

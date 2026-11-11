@@ -1,22 +1,4 @@
-import type { TypedEvent } from "../utils/types";
-
-declare global {
-  interface HTMLElementTagNameMap {
-    "music-uploader": MusicUploaderElement;
-  }
-
-  interface GlobalEventHandlersEventMap {
-    "music-uploader:upload-files": MusicUploaderEvent<UploadFilesDetail>;
-  }
-}
-
-type MusicUploaderEventMap = {
-  "music-uploader:upload-files": CustomEvent<UploadFilesDetail>;
-};
-
-type MusicUploaderEvent<Detail = unknown> = TypedEvent<MusicUploaderElement, Detail>;
-
-type UploadFilesDetail = { files: FileList };
+import type { MusicUploaderEventMap } from "../types/custom-elements";
 
 export class MusicUploaderElement extends HTMLElement {
   #musicInput!: HTMLInputElement;
