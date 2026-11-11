@@ -6,6 +6,22 @@ import type { MusicPlayerElement } from "../components/music-player";
 import type { PlayControlElement } from "../components/music-player/play-control";
 import type { TempoControlElement } from "../components/music-player/tempo-control";
 import type { VolumeControlElement } from "../components/music-player/volume-control";
+import type {
+  ShortcutKeyHandler,
+  ShortcutKeyHandlerEventMap,
+} from "../components/music-player/_helpers/shortcut-key-handler";
+import type { AudioPlayer, AudioPlayerEventMap } from "../lib/audio-player";
+
+// EventMapの各エントリをTypedEventに変換する
+type ToTypedEventMap<
+  Target extends EventTarget,
+  EventMap extends Record<string, CustomEvent<unknown>>,
+> = {
+  [Type in keyof EventMap]: TypedEvent<
+    Target,
+    EventMap[Type] extends CustomEvent<infer Detail> ? Detail : never
+  >;
+};
 
 // Uploader
 export type UploadFilesDetail = { files: FileList };
@@ -77,7 +93,10 @@ declare global {
     "volume-control": VolumeControlElement;
   }
 
-  interface GlobalEventHandlersEventMap {
+  interface GlobalEventHandlersEventMap
+    extends
+      ToTypedEventMap<ShortcutKeyHandler, ShortcutKeyHandlerEventMap>,
+      ToTypedEventMap<AudioPlayer, AudioPlayerEventMap> {
     "music-uploader:upload-files": MusicUploaderEvent<UploadFilesDetail>;
     "music-list:select": MusicListEvent<SelectDetail>;
     "music-player:play": MusicPlayerEvent<PlayDetail>;
@@ -93,5 +112,3 @@ declare global {
     "volume-control:seek": VolumeControlEvent<VolumeControlSeekDetail>;
   }
 }
-
-export {};

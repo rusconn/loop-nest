@@ -1,6 +1,7 @@
 import { clamp } from "./math";
+import { dispatchTypedEvent } from "../utils/event";
 
-export type AudioPlayerEvents = {
+export type AudioPlayerEventMap = {
   end: CustomEvent<{}>;
   "entire-loop": CustomEvent<{}>;
 };
@@ -326,7 +327,7 @@ export class AudioPlayer extends EventTarget {
         newSource.loop = Boolean(loop);
         if (!loop) {
           newSource.onended = () => {
-            this.#dispatchEvent("end", {});
+            dispatchTypedEvent(this, "end", {});
           };
         }
         if (typeof loop === "object") {
@@ -334,7 +335,7 @@ export class AudioPlayer extends EventTarget {
           newSource.loopEnd = loop.end;
           newSource.onended = async () => {
             await this.seekTo(0);
-            this.#dispatchEvent("entire-loop", {});
+            dispatchTypedEvent(this, "entire-loop", {});
           };
         }
         break;
@@ -372,18 +373,6 @@ export class AudioPlayer extends EventTarget {
     this.#muteNode.gain.value ^= 1;
     const current = this.#muteNode.gain.value === 0 ? "muted" : "unmuted";
     return { type: "success", current };
-  }
-
-  #dispatchEvent<Type extends keyof AudioPlayerEvents>(
-    type: Type,
-    detail: AudioPlayerEvents[Type] extends CustomEvent<infer Detail> ? Detail : never,
-  ) {
-    this.dispatchEvent(
-      new CustomEvent(type, {
-        detail,
-        bubbles: false,
-      }),
-    );
   }
 }
 

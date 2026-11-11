@@ -10,7 +10,7 @@ import type { PlayControlElement } from "./music-player/play-control";
 import type { VolumeControlElement } from "./music-player/volume-control";
 import type { TempoControlElement } from "./music-player/tempo-control";
 import { clamp } from "../lib/math";
-import type { MusicPlayerEventMap } from "../types/custom-elements";
+import { dispatchTypedEvent } from "../utils/event";
 
 export class MusicPlayerElement extends HTMLElement {
   #mediaSession!: MediaSessionElement;
@@ -122,7 +122,7 @@ export class MusicPlayerElement extends HTMLElement {
   }
 
   async load(music: Music) {
-    this.#dispatchEvent("music-player:start-loading", { music });
+    dispatchTypedEvent(this, "music-player:start-loading", { music });
 
     this.setAttribute("inert", "");
     this.#pauseUI();
@@ -145,11 +145,11 @@ export class MusicPlayerElement extends HTMLElement {
         this.#loadToUI(music);
         this.#loadToMediaSession(music);
         this.#loadedMusic = music;
-        this.#dispatchEvent("music-player:complete-loading", { music });
+        dispatchTypedEvent(this, "music-player:complete-loading", { music });
         break;
       case "failed":
         console.error(result.cause);
-        this.#dispatchEvent("music-player:fail-loading", { music });
+        dispatchTypedEvent(this, "music-player:fail-loading", { music });
         break;
       case "unsupported":
         console.error("unsupported operation");
@@ -208,7 +208,7 @@ export class MusicPlayerElement extends HTMLElement {
     const result = await this.#audioPlayer.play();
     switch (result.type) {
       case "success":
-        this.#dispatchEvent("music-player:play", { music: this.#loadedMusic });
+        dispatchTypedEvent(this, "music-player:play", { music: this.#loadedMusic });
         this.#renderForPlay();
         break;
       case "unsupported":
@@ -230,7 +230,7 @@ export class MusicPlayerElement extends HTMLElement {
     const result = await this.#audioPlayer.pause();
     switch (result.type) {
       case "success":
-        this.#dispatchEvent("music-player:pause", { music: this.#loadedMusic });
+        dispatchTypedEvent(this, "music-player:pause", { music: this.#loadedMusic });
         this.#renderForPause();
         break;
       case "unsupported":
@@ -252,10 +252,8 @@ export class MusicPlayerElement extends HTMLElement {
     const result = await this.#audioPlayer.togglePlaying();
     switch (result.type) {
       case "success": {
-        this.#dispatchEvent(
-          `music-player:${result.current === "paused" ? "pause" : "play"}`, //
-          { music: this.#loadedMusic },
-        );
+        const eventType = result.current === "paused" ? "music-player:pause" : "music-player:play";
+        dispatchTypedEvent(this, eventType, { music: this.#loadedMusic });
         this.#renderForTogglePlaying(result.current);
         break;
       }
@@ -361,16 +359,4 @@ export class MusicPlayerElement extends HTMLElement {
     }
     this.#updateDisplayRequestId = requestAnimationFrame(this.#updateCurrentTime);
   };
-
-  #dispatchEvent<Type extends keyof MusicPlayerEventMap>(
-    type: Type,
-    detail: MusicPlayerEventMap[Type] extends CustomEvent<infer Detail> ? Detail : never,
-  ) {
-    this.dispatchEvent(
-      new CustomEvent(type, {
-        detail,
-        bubbles: false,
-      }),
-    );
-  }
 }

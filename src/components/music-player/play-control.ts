@@ -1,5 +1,5 @@
 import { formatSec } from "../../utils/format";
-import type { PlayControlEventMap } from "../../types/custom-elements";
+import { dispatchTypedEvent } from "../../utils/event";
 
 export class PlayControlElement extends HTMLElement {
   #playPause!: HTMLButtonElement;
@@ -21,13 +21,13 @@ export class PlayControlElement extends HTMLElement {
     this.#durationDisplay = this.querySelector(".duration")!;
 
     this.#playPause.addEventListener("click", () => {
-      this.#dispatchEvent("play-control:toggle", {});
+      dispatchTypedEvent(this, "play-control:toggle", {});
     });
 
     this.#seekBar.addEventListener("change", (e) => {
       const input = e.currentTarget as HTMLInputElement;
       const second = Number(input.value);
-      this.#dispatchEvent("play-control:seek", { second });
+      dispatchTypedEvent(this, "play-control:seek", { second });
     });
 
     this.#seekBar.addEventListener("mousedown", this.#startSeek);
@@ -95,16 +95,4 @@ export class PlayControlElement extends HTMLElement {
   #endSeek = () => {
     this.#isUserSeeking = false;
   };
-
-  #dispatchEvent<Type extends keyof PlayControlEventMap>(
-    type: Type,
-    detail: PlayControlEventMap[Type] extends CustomEvent<infer Detail> ? Detail : never,
-  ) {
-    this.dispatchEvent(
-      new CustomEvent(type, {
-        detail,
-        bubbles: false,
-      }),
-    );
-  }
 }

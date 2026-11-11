@@ -1,4 +1,4 @@
-import type { TempoControlEventMap } from "../../types/custom-elements";
+import { dispatchTypedEvent } from "../../utils/event";
 
 export class TempoControlElement extends HTMLElement {
   #trigger!: HTMLButtonElement;
@@ -29,13 +29,13 @@ export class TempoControlElement extends HTMLElement {
     });
 
     this.#tempoButton.addEventListener("click", () => {
-      this.#dispatchEvent("tempo-control:reset", {});
+      dispatchTypedEvent(this, "tempo-control:reset", {});
     });
 
     this.#tempoBar.addEventListener("input", (e) => {
       const input = e.currentTarget as HTMLInputElement;
       const value = Number(input.value);
-      this.#dispatchEvent("tempo-control:seek", { tempo: value });
+      dispatchTypedEvent(this, "tempo-control:seek", { tempo: value });
     });
   }
 
@@ -55,17 +55,5 @@ export class TempoControlElement extends HTMLElement {
 
   get max() {
     return Number(this.#tempoBar.max);
-  }
-
-  #dispatchEvent<Type extends keyof TempoControlEventMap>(
-    type: Type,
-    detail: TempoControlEventMap[Type] extends CustomEvent<infer Detail> ? Detail : never,
-  ) {
-    this.dispatchEvent(
-      new CustomEvent(type, {
-        detail,
-        bubbles: false,
-      }),
-    );
   }
 }

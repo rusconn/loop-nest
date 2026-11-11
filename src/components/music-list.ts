@@ -2,7 +2,7 @@ import { Music } from "../models/music";
 import { MusicMetadataStorage } from "../storage/music/metadata";
 import { MusicSettingsStorage } from "../storage/music/settings";
 import { formatSec } from "../utils/format";
-import type { MusicListEventMap } from "../types/custom-elements";
+import { dispatchTypedEvent } from "../utils/event";
 
 export class MusicListElement extends HTMLElement {
   #ul!: HTMLUListElement;
@@ -71,7 +71,7 @@ export class MusicListElement extends HTMLElement {
     const [title, duration] = button.children;
 
     button.addEventListener("click", () => {
-      this.#dispatchEvent("music-list:select", { music });
+      dispatchTypedEvent(this, "music-list:select", { music });
     });
 
     const { common, format } = music.metadata;
@@ -136,17 +136,5 @@ export class MusicListElement extends HTMLElement {
 
   #queryRow(music: Music) {
     return this.querySelector(`li[data-id=${music.id}]`);
-  }
-
-  #dispatchEvent<Type extends keyof MusicListEventMap>(
-    type: Type,
-    detail: MusicListEventMap[Type] extends CustomEvent<infer Detail> ? Detail : never,
-  ) {
-    this.dispatchEvent(
-      new CustomEvent(type, {
-        detail,
-        bubbles: false,
-      }),
-    );
   }
 }

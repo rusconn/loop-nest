@@ -1,4 +1,4 @@
-import type { VolumeControlEventMap } from "../../types/custom-elements";
+import { dispatchTypedEvent } from "../../utils/event";
 
 export class VolumeControlElement extends HTMLElement {
   #trigger!: HTMLButtonElement;
@@ -37,13 +37,13 @@ export class VolumeControlElement extends HTMLElement {
     });
 
     this.#muteButton.addEventListener("click", () => {
-      this.#dispatchEvent("volume-control:toggle", {});
+      dispatchTypedEvent(this, "volume-control:toggle", {});
     });
 
     this.#volumeBar.addEventListener("input", (e) => {
       const input = e.currentTarget as HTMLInputElement;
       const value = Number(input.value);
-      this.#dispatchEvent("volume-control:seek", { volume: value });
+      dispatchTypedEvent(this, "volume-control:seek", { volume: value });
     });
   }
 
@@ -77,17 +77,5 @@ export class VolumeControlElement extends HTMLElement {
       this.#popupVolumeIcon.hidden = false;
       this.#popupMutedIcon.hidden = true;
     }
-  }
-
-  #dispatchEvent<Type extends keyof VolumeControlEventMap>(
-    type: Type,
-    detail: VolumeControlEventMap[Type] extends CustomEvent<infer Detail> ? Detail : never,
-  ) {
-    this.dispatchEvent(
-      new CustomEvent(type, {
-        detail,
-        bubbles: false,
-      }),
-    );
   }
 }
