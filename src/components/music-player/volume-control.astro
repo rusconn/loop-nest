@@ -29,9 +29,7 @@ const { props } = Astro;
 <script>
   import { VolumeControlElement } from "./volume-control";
 
-  if (!customElements.get("volume-control")) {
-    customElements.define("volume-control", VolumeControlElement);
-  }
+  customElements.define("volume-control", VolumeControlElement);
 </script>
 
 <style>

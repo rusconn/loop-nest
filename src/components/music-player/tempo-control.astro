@@ -27,9 +27,7 @@ const { props } = Astro;
 <script>
   import { TempoControlElement } from "./tempo-control";
 
-  if (!customElements.get("tempo-control")) {
-    customElements.define("tempo-control", TempoControlElement);
-  }
+  customElements.define("tempo-control", TempoControlElement);
 </script>
 
 <style>

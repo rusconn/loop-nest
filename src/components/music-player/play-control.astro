@@ -42,7 +42,5 @@ const { props } = Astro;
 <script>
   import { PlayControlElement } from "./play-control";
 
-  if (!customElements.get("play-control")) {
-    customElements.define("play-control", PlayControlElement);
-  }
+  customElements.define("play-control", PlayControlElement);
 </script>

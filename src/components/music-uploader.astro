@@ -44,7 +44,5 @@
 <script>
   import { MusicUploaderElement } from "./music-uploader";
 
-  if (!customElements.get("music-uploader")) {
-    customElements.define("music-uploader", MusicUploaderElement);
-  }
+  customElements.define("music-uploader", MusicUploaderElement);
 </script>

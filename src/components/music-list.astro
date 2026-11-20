@@ -82,7 +82,5 @@ import LoadingIndicator from "./music-list/loading-indicator.astro";
 <script>
   import { MusicListElement } from "./music-list";
 
-  if (!customElements.get("music-list")) {
-    customElements.define("music-list", MusicListElement);
-  }
+  customElements.define("music-list", MusicListElement);
 </script>

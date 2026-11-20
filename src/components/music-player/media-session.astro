@@ -13,7 +13,5 @@ const { props } = Astro;
 <script>
   import { MediaSessionElement } from "./media-session";
 
-  if (!customElements.get("media-session")) {
-    customElements.define("media-session", MediaSessionElement);
-  }
+  customElements.define("media-session", MediaSessionElement);
 </script>

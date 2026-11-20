@@ -41,7 +41,5 @@ import TempoControl from "./music-player/tempo-control.astro";
 <script>
   import { MusicPlayerElement } from "./music-player";
 
-  if (!customElements.get("music-player")) {
-    customElements.define("music-player", MusicPlayerElement);
-  }
+  customElements.define("music-player", MusicPlayerElement);
 </script>
