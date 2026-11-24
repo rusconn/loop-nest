@@ -1,5 +1,5 @@
 import { debounce } from "../../lib/debounce";
-import type { Music, MusicId, Settings } from "../../models/music";
+import type { Music } from "../../models/music";
 
 export const MusicSettingsStorage = {
   update({ id, settings }: Pick<Music, "id" | "settings">) {
@@ -7,16 +7,16 @@ export const MusicSettingsStorage = {
     scheduledUpdates.set(id, snapshot);
     scheduleUpdate();
   },
-  get(id: MusicId): Settings | undefined {
+  get(id: Music["id"]): Music["settings"] | undefined {
     const saved = localStorage.getItem(`settings:${id}`);
     return saved ? JSON.parse(saved) : undefined;
   },
-  set(id: MusicId, settings: Settings) {
+  set(id: Music["id"], settings: Music["settings"]) {
     localStorage.setItem(`settings:${id}`, JSON.stringify(settings));
   },
 };
 
-const scheduledUpdates = new Map<MusicId, Settings>();
+const scheduledUpdates = new Map<Music["id"], Music["settings"]>();
 const scheduleUpdate = debounce(doUpdates, 200);
 
 function doUpdates() {

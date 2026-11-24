@@ -58,11 +58,26 @@ import MusicList from "../components/music-list.astro";
 </style>
 
 <script>
-  import { loadMusic } from "../models/music-ref";
+  import { Music } from "../models/music";
 
-  const player = document.querySelector("music-player")!;
   const uploader = document.querySelector("music-uploader")!;
   const list = document.querySelector("music-list")!;
+  const player = document.querySelector("music-player")!;
+
+  uploader.addEventListener("music-uploader:upload-files", async (e) => {
+    await list.add(e.detail.files);
+  });
+
+  list.addEventListener("music-list:select", async (e) => {
+    const { id, metadata, settings, file } = e.detail.handle;
+    try {
+      const buffer = await file.arrayBuffer();
+      await player.load(Music.create(id, metadata, settings, buffer));
+    } catch (cause) {
+      console.error(cause, id);
+      alert("Sorry, failed to load the music file.\nThe file may have been moved or deleted.");
+    }
+  });
 
   player.addEventListener("music-player:start-loading", (e) => {
     list.startLoading(e.detail.music);
@@ -73,18 +88,5 @@ import MusicList from "../components/music-list.astro";
   });
   player.addEventListener("music-player:fail-loading", (e) => {
     list.failLoading(e.detail.music);
-  });
-
-  uploader.addEventListener("music-uploader:upload-files", async (e) => {
-    await list.add(e.detail.files);
-  });
-
-  list.addEventListener("music-list:select", async (e) => {
-    try {
-      await player.load(await loadMusic(e.detail.ref));
-    } catch (cause) {
-      console.error(cause, e.detail.ref.id);
-      alert("Sorry, failed to load the music file.\nThe file may have been moved or deleted.");
-    }
   });
 </script>

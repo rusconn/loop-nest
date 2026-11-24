@@ -1,11 +1,11 @@
-import type { Metadata, MetadataPossiblyOld, MusicId } from "../../models/music";
+import type { MetadataPossiblyOld, Music } from "../../models/music";
 
 export const MusicMetadataStorage = {
-  get(id: MusicId): MetadataPossiblyOld | undefined {
+  get(id: Music["id"]): MetadataPossiblyOld | undefined {
     const saved = localStorage.getItem(`metadata:${id}`);
     return saved ? JSON.parse(saved) : undefined;
   },
-  set(id: MusicId, metadata: Metadata) {
+  set(id: Music["id"], metadata: Music["metadata"]) {
     localStorage.setItem(`metadata:${id}`, JSON.stringify(metadata));
   },
 };

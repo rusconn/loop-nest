@@ -1,5 +1,5 @@
 import type { Music } from "../models/music";
-import type { MusicRef } from "../models/music-ref";
+import type { MusicHandle } from "../models/music-handle";
 import type { TypedEvent } from "../utils/types";
 import type { MusicUploaderElement } from "../components/music-uploader";
 import type { MusicListElement } from "../components/music-list";
@@ -32,7 +32,7 @@ export type MusicUploaderEventMap = {
 export type MusicUploaderEvent<Detail = unknown> = TypedEvent<MusicUploaderElement, Detail>;
 
 // List
-export type SelectDetail = { ref: MusicRef };
+export type SelectDetail = { handle: MusicHandle };
 export type MusicListEventMap = {
   "music-list:select": CustomEvent<SelectDetail>;
 };
