@@ -58,6 +58,8 @@ import MusicList from "../components/music-list.astro";
 </style>
 
 <script>
+  import { loadMusic } from "../models/music-ref";
+
   const player = document.querySelector("music-player")!;
   const uploader = document.querySelector("music-uploader")!;
   const list = document.querySelector("music-list")!;
@@ -78,6 +80,11 @@ import MusicList from "../components/music-list.astro";
   });
 
   list.addEventListener("music-list:select", async (e) => {
-    await player.load(e.detail.music);
+    try {
+      await player.load(await loadMusic(e.detail.ref));
+    } catch (cause) {
+      console.error(cause, e.detail.ref.id);
+      alert("Sorry, failed to load the music file.\nThe file may have been moved or deleted.");
+    }
   });
 </script>

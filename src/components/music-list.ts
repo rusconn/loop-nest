@@ -1,4 +1,5 @@
-import { Music } from "../models/music";
+import { Music, type Metadata } from "../models/music";
+import type { MusicRef } from "../models/music-ref";
 import { MusicMetadataStorage } from "../storage/music/metadata";
 import { MusicSettingsStorage } from "../storage/music/settings";
 import { formatSec } from "../utils/format";
@@ -32,8 +33,7 @@ export class MusicListElement extends HTMLElement {
       savedMetadata != null && savedMetadata.version < Music.CURRENT_METADATA_VERSION;
 
     if (savedMetadata && savedSettings && !isOldMetadata) {
-      const music: Music = { id, buffer, metadata: savedMetadata, settings: savedSettings };
-      return this.#buildLiFragment(music);
+      return this.#buildLiFragment({ id, file }, savedMetadata);
     }
 
     const result = await Music.parse(id, buffer, file.type, file.name);
@@ -48,7 +48,7 @@ export class MusicListElement extends HTMLElement {
         if (!savedSettings) {
           MusicSettingsStorage.set(id, music.settings);
         }
-        return this.#buildLiFragment(music);
+        return this.#buildLiFragment({ id, file }, music.metadata);
       }
       case "invalid-loop":
         console.error(result.message, file.name);
@@ -64,22 +64,22 @@ export class MusicListElement extends HTMLElement {
     }
   }
 
-  #buildLiFragment(music: Music) {
+  #buildLiFragment(ref: MusicRef, metadata: Metadata) {
     const liFragment = this.#liTemplate.content.cloneNode(true) as DocumentFragment;
     const li = liFragment.firstElementChild!;
     const [_, button] = li.children;
     const [title, duration] = button.children;
 
     button.addEventListener("click", () => {
-      dispatchTypedEvent(this, "music-list:select", { music });
+      dispatchTypedEvent(this, "music-list:select", { ref });
     });
 
-    const { common, format } = music.metadata;
+    const { common, format } = metadata;
 
     title.textContent = common.title;
     duration.textContent = formatSec(format.duration);
 
-    liFragment.firstElementChild!.setAttribute("data-id", music.id);
+    liFragment.firstElementChild!.setAttribute("data-id", ref.id);
 
     return liFragment;
   }
