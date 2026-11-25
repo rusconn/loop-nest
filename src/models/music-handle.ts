@@ -2,8 +2,7 @@ import type { Except, Tagged, UnwrapTagged } from "type-fest";
 
 import { Music } from "./music";
 
-// Musicよりもメモリが小さい
-type Raw = Except<UnwrapTagged<Music>, "settings" | "buffer"> & {
+type Raw = Except<UnwrapTagged<Music>, "settings"> & {
   file: File;
 };
 

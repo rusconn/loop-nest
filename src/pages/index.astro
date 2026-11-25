@@ -58,9 +58,6 @@ import MusicList from "../components/music-list.astro";
 </style>
 
 <script>
-  import { Music } from "../models/music";
-  import { MusicSettingsStorage } from "../storage/music/settings";
-
   const uploader = document.querySelector("music-uploader")!;
   const list = document.querySelector("music-list")!;
   const player = document.querySelector("music-player")!;
@@ -70,21 +67,7 @@ import MusicList from "../components/music-list.astro";
   });
 
   list.addEventListener("music-list:select", async (e) => {
-    const { id, metadata, file } = e.detail.handle;
-
-    let settings = MusicSettingsStorage.get(id);
-    if (settings == null) {
-      settings = Music.Settings.create();
-      MusicSettingsStorage.set(id, settings);
-    }
-
-    try {
-      const buffer = await file.arrayBuffer();
-      await player.load(Music.create(id, metadata, settings, buffer));
-    } catch (cause) {
-      console.error(cause, id);
-      alert("Sorry, failed to load the music file.\nThe file may have been moved or deleted.");
-    }
+    await player.load(e.detail.handle);
   });
 
   player.addEventListener("music-player:start-loading", (e) => {

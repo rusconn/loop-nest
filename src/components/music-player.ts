@@ -1,5 +1,6 @@
 import { AudioPlayer } from "../lib/audio-player";
-import type { Music } from "../models/music";
+import { Music } from "../models/music";
+import type { MusicHandle } from "../models/music-handle";
 import { MusicSettingsStorage } from "../storage/music/settings";
 import {
   ShortcutKeyHandler,
@@ -121,20 +122,34 @@ export class MusicPlayerElement extends HTMLElement {
     this.#shortcutKey.unregister();
   }
 
-  async load(music: Music) {
-    dispatchTypedEvent(this, "music-player:start-loading", { id: music.id });
+  async load(handle: MusicHandle) {
+    try {
+      await this.#load(handle);
+    } catch (cause) {
+      console.error(cause, handle.id);
+      alert("Sorry, failed to load the music file.\nThe file may have been moved or deleted.");
+    }
+  }
+
+  async #load(handle: MusicHandle) {
+    const { id, metadata, file } = handle;
+
+    const buffer = await file.arrayBuffer();
+    const settings = this.#resolveSettings(id);
+    const music = Music.create(id, metadata, settings);
+
+    dispatchTypedEvent(this, "music-player:start-loading", { id });
 
     this.setAttribute("inert", "");
     this.#pauseUI();
 
-    const { buffer, metadata } = music;
     const { format, loopInfo } = metadata;
     const { duration } = format;
 
     console.log(loopInfo ?? "none");
 
     const result = await this.#audioPlayer.load(buffer, duration, {
-      ...music.settings,
+      ...settings,
       loop: loopInfo ?? true,
     });
 
@@ -145,17 +160,26 @@ export class MusicPlayerElement extends HTMLElement {
         this.#loadToUI(music);
         this.#loadToMediaSession(music);
         this.#loadedMusic = music;
-        dispatchTypedEvent(this, "music-player:complete-loading", { id: music.id });
+        dispatchTypedEvent(this, "music-player:complete-loading", { id });
         break;
       case "failed":
         console.error(result.cause);
-        dispatchTypedEvent(this, "music-player:fail-loading", { id: music.id });
+        dispatchTypedEvent(this, "music-player:fail-loading", { id });
         break;
       case "unsupported":
         console.error("unsupported operation");
         break;
       default:
         result satisfies never;
+    }
+  }
+
+  #resolveSettings(id: Music["id"]): Music["settings"] {
+    try {
+      return MusicSettingsStorage.get(id) ?? Music.Settings.create();
+    } catch (cause) {
+      console.error(cause, id);
+      return Music.Settings.create();
     }
   }
 

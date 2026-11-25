@@ -10,14 +10,13 @@ type Raw = {
   id: Id;
   metadata: Metadata;
   settings: Settings;
-  buffer: ArrayBuffer;
 };
 
 export type Music = Tagged<Raw, "Music">;
 
 export const Music = {
-  create(id: Id, metadata: Metadata, settings: Settings, buffer: ArrayBuffer): Music {
-    return { id, metadata, settings, buffer } as Music;
+  create(id: Id, metadata: Metadata, settings: Settings): Music {
+    return { id, metadata, settings } as Music;
   },
 
   Id,
