@@ -48,12 +48,4 @@ export class TempoControlElement extends HTMLElement {
     this.#tempoBar.value = tempoValue;
     this.#popupTempoText.textContent = tempoValue;
   }
-
-  get min() {
-    return Number(this.#tempoBar.min);
-  }
-
-  get max() {
-    return Number(this.#tempoBar.max);
-  }
 }

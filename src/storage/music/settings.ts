@@ -1,31 +1,32 @@
 import { debounce } from "../../lib/debounce";
 import type { Music } from "../../models/music";
+import { Settings } from "../../models/music/settings";
 
 export const MusicSettingsStorage = {
-  update({ id, settings }: Pick<Music, "id" | "settings">) {
-    const snapshot = { ...settings };
-    scheduledUpdates.set(id, snapshot);
-    scheduleUpdate();
-  },
-  get(id: Music["id"]): Music["settings"] | undefined {
+  get(id: Music["id"]): Settings | undefined {
     const scheduledUpdate = scheduledUpdates.get(id);
     if (scheduledUpdate != null) {
       return scheduledUpdate;
     }
     const saved = localStorage.getItem(`settings:${id}`);
-    return saved ? JSON.parse(saved) : undefined;
+    return saved ? Settings.parse(saved) : undefined;
   },
-  set(id: Music["id"], settings: Music["settings"]) {
-    localStorage.setItem(`settings:${id}`, JSON.stringify(settings));
+  upsert(id: Music["id"], settings: Settings) {
+    scheduledUpdates.set(id, { ...settings });
+    scheduleUpdate();
   },
 };
 
-const scheduledUpdates = new Map<Music["id"], Music["settings"]>();
+const scheduledUpdates = new Map<Music["id"], Settings>();
 const scheduleUpdate = debounce(doUpdates, 200);
+
+function set(id: Music["id"], settings: Settings) {
+  localStorage.setItem(`settings:${id}`, JSON.stringify(settings));
+}
 
 function doUpdates() {
   for (const [id, settings] of scheduledUpdates) {
-    MusicSettingsStorage.set(id, settings);
+    set(id, settings);
   }
   scheduledUpdates.clear();
 }

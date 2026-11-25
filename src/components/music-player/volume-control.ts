@@ -57,14 +57,6 @@ export class VolumeControlElement extends HTMLElement {
     this.#popupVolumeText.textContent = volumeValue;
   }
 
-  get min() {
-    return Number(this.#volumeBar.min);
-  }
-
-  get max() {
-    return Number(this.#volumeBar.max);
-  }
-
   set muted(muted: boolean) {
     if (muted) {
       this.#triggerVolumeIcon.hidden = true;

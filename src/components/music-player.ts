@@ -185,46 +185,40 @@ export class MusicPlayerElement extends HTMLElement {
 
   set volume(volume: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.#audioPlayer.volume = volume;
-    this.#volumeControl.volume = Math.round(volume * 100);
-    this.#loadedMusic.settings.volume = volume;
-    MusicSettingsStorage.update(this.#loadedMusic);
+    const settings = Music.Settings.withVolume(this.#loadedMusic.settings, volume);
+    this.#audioPlayer.volume = settings.volume;
+    this.#volumeControl.volume = Math.round(settings.volume * 100);
+    this.#loadedMusic.settings = settings;
+    MusicSettingsStorage.upsert(this.#loadedMusic.id, settings);
   }
 
   downVolume(amount: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const { min, volume } = this.#volumeControl;
-    const newVolume = Math.max(min / 100, volume / 100 - amount);
-    this.volume = newVolume;
+    this.volume = this.#volumeControl.volume / 100 - amount;
   }
 
   upVolume(amount: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const { max, volume } = this.#volumeControl;
-    const newVolume = Math.min(max / 100, volume / 100 + amount);
-    this.volume = newVolume;
+    this.volume = this.#volumeControl.volume / 100 + amount;
   }
 
   set tempo(tempo: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.#audioPlayer.tempo = tempo;
-    this.#tempoControl.tempo = tempo;
-    this.#loadedMusic.settings.tempo = tempo;
-    MusicSettingsStorage.update(this.#loadedMusic);
+    const settings = Music.Settings.withTempo(this.#loadedMusic.settings, tempo);
+    this.#audioPlayer.tempo = settings.tempo;
+    this.#tempoControl.tempo = settings.tempo;
+    this.#loadedMusic.settings = settings;
+    MusicSettingsStorage.upsert(this.#loadedMusic.id, settings);
   }
 
   downTempo(amount: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const { min, tempo } = this.#tempoControl;
-    const newTempo = Math.max(min, tempo - amount);
-    this.tempo = newTempo;
+    this.tempo = this.#tempoControl.tempo - amount;
   }
 
   upTempo(amount: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const { max, tempo } = this.#tempoControl;
-    const newTempo = Math.min(max, tempo + amount);
-    this.tempo = newTempo;
+    this.tempo = this.#tempoControl.tempo + amount;
   }
 
   async play() {
