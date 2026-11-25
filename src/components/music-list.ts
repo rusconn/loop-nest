@@ -1,7 +1,6 @@
 import { Music } from "../models/music";
 import { MusicHandle } from "../models/music-handle";
 import { MusicMetadataStorage } from "../storage/music/metadata";
-import { MusicSettingsStorage } from "../storage/music/settings";
 import { dispatchTypedEvent } from "../utils/event";
 import { formatSec } from "../utils/format";
 
@@ -34,23 +33,6 @@ export class MusicListElement extends HTMLElement {
     }
 
     const buffer = await file.arrayBuffer();
-
-    // TODO: remove legacy migration
-    const legacyId = await Music.Id.createLegacy(buffer);
-    const legacySavedMetadata = MusicMetadataStorage.getLegacy(legacyId);
-    const isLegacyOldMetadata =
-      (legacySavedMetadata?.version ?? Infinity) < Music.Metadata.CURRENT_VERSION;
-    if (legacySavedMetadata != null && !isLegacyOldMetadata) {
-      MusicMetadataStorage.set(id, legacySavedMetadata);
-      MusicMetadataStorage.deleteLegacy(legacyId);
-      return this.#buildLiFragment(id, legacySavedMetadata, file);
-    }
-    const logacySavedSettings = MusicSettingsStorage.getLegacy(legacyId);
-    if (logacySavedSettings != null) {
-      MusicSettingsStorage.upsert(id, logacySavedSettings);
-      MusicSettingsStorage.deleteLegacy(legacyId);
-    }
-
     const result = await Music.Metadata.parse(buffer, file.type, file.name);
 
     // TODO: make some announcement
