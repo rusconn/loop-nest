@@ -319,9 +319,7 @@ export class AudioPlayer extends EventTarget {
         offset = 0;
         const { audio, tempo, volume, loop } = args;
         // may reject with DOMException
-        newSource.buffer = await this.#context.decodeAudioData(
-          audio.slice(0), // copy so the caller's buffer stays reusable
-        );
+        newSource.buffer = await this.#context.decodeAudioData(audio);
         newSource.playbackRate.value = tempo;
         this.#gainNode.gain.value = volume;
         newSource.loop = Boolean(loop);
