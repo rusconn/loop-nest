@@ -8,6 +8,10 @@ export const MusicSettingsStorage = {
     scheduleUpdate();
   },
   get(id: Music["id"]): Music["settings"] | undefined {
+    const scheduledUpdate = scheduledUpdates.get(id);
+    if (scheduledUpdate != null) {
+      return scheduledUpdate;
+    }
     const saved = localStorage.getItem(`settings:${id}`);
     return saved ? JSON.parse(saved) : undefined;
   },

@@ -59,6 +59,7 @@ import MusicList from "../components/music-list.astro";
 
 <script>
   import { Music } from "../models/music";
+  import { MusicSettingsStorage } from "../storage/music/settings";
 
   const uploader = document.querySelector("music-uploader")!;
   const list = document.querySelector("music-list")!;
@@ -69,7 +70,14 @@ import MusicList from "../components/music-list.astro";
   });
 
   list.addEventListener("music-list:select", async (e) => {
-    const { id, metadata, settings, file } = e.detail.handle;
+    const { id, metadata, file } = e.detail.handle;
+
+    let settings = MusicSettingsStorage.get(id);
+    if (settings == null) {
+      settings = Music.Settings.create();
+      MusicSettingsStorage.set(id, settings);
+    }
+
     try {
       const buffer = await file.arrayBuffer();
       await player.load(Music.create(id, metadata, settings, buffer));
@@ -80,13 +88,13 @@ import MusicList from "../components/music-list.astro";
   });
 
   player.addEventListener("music-player:start-loading", (e) => {
-    list.startLoading(e.detail.music);
+    list.startLoading(e.detail.id);
   });
   player.addEventListener("music-player:complete-loading", async (e) => {
-    list.completeLoading(e.detail.music);
+    list.completeLoading(e.detail.id);
     await player.play();
   });
   player.addEventListener("music-player:fail-loading", (e) => {
-    list.failLoading(e.detail.music);
+    list.failLoading(e.detail.id);
   });
 </script>

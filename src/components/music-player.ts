@@ -122,7 +122,7 @@ export class MusicPlayerElement extends HTMLElement {
   }
 
   async load(music: Music) {
-    dispatchTypedEvent(this, "music-player:start-loading", { music });
+    dispatchTypedEvent(this, "music-player:start-loading", { id: music.id });
 
     this.setAttribute("inert", "");
     this.#pauseUI();
@@ -145,11 +145,11 @@ export class MusicPlayerElement extends HTMLElement {
         this.#loadToUI(music);
         this.#loadToMediaSession(music);
         this.#loadedMusic = music;
-        dispatchTypedEvent(this, "music-player:complete-loading", { music });
+        dispatchTypedEvent(this, "music-player:complete-loading", { id: music.id });
         break;
       case "failed":
         console.error(result.cause);
-        dispatchTypedEvent(this, "music-player:fail-loading", { music });
+        dispatchTypedEvent(this, "music-player:fail-loading", { id: music.id });
         break;
       case "unsupported":
         console.error("unsupported operation");

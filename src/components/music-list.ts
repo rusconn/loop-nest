@@ -1,7 +1,6 @@
 import { Music } from "../models/music";
 import { MusicHandle } from "../models/music-handle";
 import { MusicMetadataStorage } from "../storage/music/metadata";
-import { MusicSettingsStorage } from "../storage/music/settings";
 import { dispatchTypedEvent } from "../utils/event";
 import { formatSec } from "../utils/format";
 
@@ -28,54 +27,43 @@ export class MusicListElement extends HTMLElement {
     const id = await Music.Id.create(buffer);
 
     const savedMetadata = MusicMetadataStorage.get(id);
-    const savedSettings = MusicSettingsStorage.get(id);
-    const isOldMetadata =
-      savedMetadata != null && savedMetadata.version < Music.Metadata.CURRENT_VERSION;
+    const isOldMetadata = (savedMetadata?.version ?? Infinity) < Music.Metadata.CURRENT_VERSION;
 
-    if (savedMetadata && savedSettings && !isOldMetadata) {
-      return this.#buildLiFragment(id, savedMetadata, savedSettings, file);
+    if (savedMetadata != null && !isOldMetadata) {
+      return this.#buildLiFragment(id, savedMetadata, file);
     }
 
-    const metadata = await Music.Metadata.parse(buffer, file.type, file.name);
-    const settings = Music.Settings.create();
+    const result = await Music.Metadata.parse(buffer, file.type, file.name);
 
     // TODO: make some announcement
-    switch (metadata.kind) {
+    switch (result.kind) {
       case "ok": {
         if (savedMetadata == null || isOldMetadata) {
-          MusicMetadataStorage.set(id, metadata.metadata);
+          MusicMetadataStorage.set(id, result.metadata);
         }
-        if (savedSettings == null) {
-          MusicSettingsStorage.set(id, settings);
-        }
-        return this.#buildLiFragment(id, metadata.metadata, settings, file);
+        return this.#buildLiFragment(id, result.metadata, file);
       }
       case "invalid-loop":
-        console.error(metadata.message, file.name);
+        console.error(result.message, file.name);
         break;
       case "unreadable":
-        console.error(metadata.cause, file.name);
+        console.error(result.cause, file.name);
         break;
       case "no-duration":
         console.error("failed to parse duration", file.name);
         break;
       default:
-        throw new Error(metadata satisfies never);
+        throw new Error(result satisfies never);
     }
   }
 
-  #buildLiFragment(
-    id: Music["id"],
-    metadata: Music["metadata"],
-    settings: Music["settings"],
-    file: File,
-  ) {
+  #buildLiFragment(id: Music["id"], metadata: Music["metadata"], file: File) {
     const liFragment = this.#liTemplate.content.cloneNode(true) as DocumentFragment;
     const li = liFragment.firstElementChild!;
     const [_, button] = li.children;
     const [title, duration] = button.children;
 
-    const handle = MusicHandle.create(id, metadata, settings, file);
+    const handle = MusicHandle.create(id, metadata, file);
 
     button.addEventListener("click", () => {
       dispatchTypedEvent(this, "music-list:select", { handle });
@@ -91,7 +79,7 @@ export class MusicListElement extends HTMLElement {
     return liFragment;
   }
 
-  startLoading(music: Music) {
+  startLoading(id: Music["id"]) {
     this.#ul.setAttribute("inert", "");
 
     if (this.#loadedId) {
@@ -101,30 +89,30 @@ export class MusicListElement extends HTMLElement {
       }
     }
 
-    const loading = this.#queryLoadingIndicator(music.id);
+    const loading = this.#queryLoadingIndicator(id);
     if (loading) {
       loading.hidden = false;
     }
   }
 
-  completeLoading(music: Music) {
-    const loading = this.#queryLoadingIndicator(music.id);
+  completeLoading(id: Music["id"]) {
+    const loading = this.#queryLoadingIndicator(id);
     if (loading) {
       loading.hidden = true;
     }
 
-    const loaded = this.#queryLoadedIndicator(music.id);
+    const loaded = this.#queryLoadedIndicator(id);
     if (loaded) {
       loaded.hidden = false;
     }
 
-    this.#loadedId = music.id;
+    this.#loadedId = id;
 
     this.#ul.removeAttribute("inert");
   }
 
-  failLoading(music: Music) {
-    const loading = this.#queryLoadingIndicator(music.id);
+  failLoading(id: Music["id"]) {
+    const loading = this.#queryLoadingIndicator(id);
     if (loading) {
       loading.hidden = true;
     }

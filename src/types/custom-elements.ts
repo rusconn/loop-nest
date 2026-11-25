@@ -41,9 +41,9 @@ export type MusicListEvent<Detail = unknown> = TypedEvent<MusicListElement, Deta
 // Player
 export type PlayDetail = { music: Music };
 export type PauseDetail = { music: Music };
-export type StartLoadingDetail = { music: Music };
-export type CompleteLoadingDetail = { music: Music };
-export type FailLoadingDetail = { music: Music };
+export type StartLoadingDetail = { id: Music["id"] };
+export type CompleteLoadingDetail = { id: Music["id"] };
+export type FailLoadingDetail = { id: Music["id"] };
 
 export type MusicPlayerEventMap = {
   "music-player:play": CustomEvent<PlayDetail>;
