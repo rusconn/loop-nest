@@ -1,6 +1,6 @@
 import { debounce } from "../../lib/debounce";
-import type { Music } from "../../models/music";
-import { Settings } from "../../models/music/settings";
+import type { Music } from "../../domain/music";
+import { Settings } from "../../domain/music/settings";
 
 export const MusicSettingsStorage = {
   get(id: Music["id"]): Settings | undefined {

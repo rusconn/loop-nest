@@ -1,5 +1,5 @@
-import type { Music } from "../models/music";
-import type { MusicHandle } from "../models/music-handle";
+import type { Music } from "../domain/music";
+import type { MusicHandle } from "../domain/music-handle";
 import type { TypedEvent } from "../utils/types";
 import type { MusicUploaderElement } from "../components/music-uploader";
 import type { MusicListElement } from "../components/music-list";

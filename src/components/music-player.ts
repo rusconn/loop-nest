@@ -1,6 +1,7 @@
+import { Music } from "../domain/music";
+import type { MusicHandle } from "../domain/music-handle";
+import { PlaybackPosition } from "../domain/playback-position";
 import { AudioPlayer } from "../lib/audio-player";
-import { Music } from "../models/music";
-import type { MusicHandle } from "../models/music-handle";
 import { MusicSettingsStorage } from "../storage/music/settings";
 import {
   ShortcutKeyHandler,
@@ -10,7 +11,6 @@ import type { MediaSessionElement } from "./music-player/media-session";
 import type { PlayControlElement } from "./music-player/play-control";
 import type { VolumeControlElement } from "./music-player/volume-control";
 import type { TempoControlElement } from "./music-player/tempo-control";
-import { PlaybackPosition } from "../models/playback-position";
 import { dispatchTypedEvent } from "../utils/event";
 
 export class MusicPlayerElement extends HTMLElement {

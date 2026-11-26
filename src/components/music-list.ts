@@ -1,5 +1,5 @@
-import { Music } from "../models/music";
-import { MusicHandle } from "../models/music-handle";
+import { Music } from "../domain/music";
+import { MusicHandle } from "../domain/music-handle";
 import { MusicMetadataStorage } from "../storage/music/metadata";
 import { dispatchTypedEvent } from "../utils/event";
 import { formatSec } from "../utils/format";

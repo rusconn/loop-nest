@@ -1,4 +1,4 @@
-import type { MetadataPossiblyOld, Music } from "../../models/music";
+import type { MetadataPossiblyOld, Music } from "../../domain/music";
 
 export const MusicMetadataStorage = {
   get(id: Music["id"]): MetadataPossiblyOld | undefined {
