@@ -10,7 +10,7 @@ import type { MediaSessionElement } from "./music-player/media-session";
 import type { PlayControlElement } from "./music-player/play-control";
 import type { VolumeControlElement } from "./music-player/volume-control";
 import type { TempoControlElement } from "./music-player/tempo-control";
-import { clamp } from "../lib/math";
+import { PlaybackPosition } from "../models/playback-position";
 import { dispatchTypedEvent } from "../utils/event";
 
 export class MusicPlayerElement extends HTMLElement {
@@ -87,13 +87,9 @@ export class MusicPlayerElement extends HTMLElement {
     this.#shortcutKey.addEventListener("shortcut-key-handler:toggle-mute", () => {
       this.toggleMute();
     });
-    this.#shortcutKey.addEventListener("shortcut-key-handler:seek-backward", async (e) => {
-      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:seek-backward"];
-      await this.seekBackward(ev.detail.secs);
-    });
-    this.#shortcutKey.addEventListener("shortcut-key-handler:seek-forward", async (e) => {
-      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:seek-forward"];
-      await this.seekForward(ev.detail.secs);
+    this.#shortcutKey.addEventListener("shortcut-key-handler:seek", async (e) => {
+      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:seek"];
+      await this.seekBy(ev.detail.delta);
     });
     this.#shortcutKey.addEventListener("shortcut-key-handler:change-volume", (e) => {
       const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:change-volume"];
@@ -292,7 +288,21 @@ export class MusicPlayerElement extends HTMLElement {
 
   async seekTo(sec: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const result = await this.#audioPlayer.seekTo(sec);
+    const duration = this.#loadedMusic.metadata.format.duration;
+    const position = PlaybackPosition.clamp(sec, duration);
+    await this.#seek(position);
+  }
+
+  async seekBy(delta: number) {
+    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
+    const currentTime = this.#audioPlayer.currentTime ?? 0;
+    const duration = this.#loadedMusic.metadata.format.duration;
+    const position = PlaybackPosition.shift(currentTime, delta, duration);
+    await this.#seek(position);
+  }
+
+  async #seek(position: PlaybackPosition) {
+    const result = await this.#audioPlayer.seekTo(position);
     switch (result.type) {
       case "success":
         this.#playControl.time = this.#audioPlayer.currentTime ?? 0;
@@ -303,20 +313,6 @@ export class MusicPlayerElement extends HTMLElement {
       default:
         result satisfies never;
     }
-  }
-
-  async seekBackward(secs: number) {
-    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const currentTime = this.#audioPlayer.currentTime ?? 0;
-    const duration = this.#loadedMusic.metadata.format.duration;
-    await this.seekTo(clamp(currentTime - secs, 0, duration));
-  }
-
-  async seekForward(secs: number) {
-    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const currentTime = this.#audioPlayer.currentTime ?? 0;
-    const duration = this.#loadedMusic.metadata.format.duration;
-    await this.seekTo(clamp(currentTime + secs, 0, duration));
   }
 
   toggleMute() {

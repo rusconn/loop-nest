@@ -4,8 +4,7 @@ import { dispatchTypedEvent } from "../../../utils/event";
 export type ShortcutKeyHandlerEventMap = {
   "shortcut-key-handler:toggle-playing": CustomEvent<{}>;
   "shortcut-key-handler:toggle-mute": CustomEvent<{}>;
-  "shortcut-key-handler:seek-backward": CustomEvent<{ secs: number }>;
-  "shortcut-key-handler:seek-forward": CustomEvent<{ secs: number }>;
+  "shortcut-key-handler:seek": CustomEvent<{ delta: number }>;
   "shortcut-key-handler:change-volume": CustomEvent<{ delta: number }>;
   "shortcut-key-handler:change-tempo": CustomEvent<{ delta: number }>;
 };
@@ -36,10 +35,10 @@ export class ShortcutKeyHandler extends EventTarget {
         dispatchTypedEvent(this, "shortcut-key-handler:toggle-mute", {});
         break;
       case "seek-backward":
-        dispatchTypedEvent(this, "shortcut-key-handler:seek-backward", { secs: 5 });
+        dispatchTypedEvent(this, "shortcut-key-handler:seek", { delta: -5 });
         break;
       case "seek-forward":
-        dispatchTypedEvent(this, "shortcut-key-handler:seek-forward", { secs: 5 });
+        dispatchTypedEvent(this, "shortcut-key-handler:seek", { delta: 5 });
         break;
       case "down-volume":
         dispatchTypedEvent(this, "shortcut-key-handler:change-volume", { delta: -0.05 });
