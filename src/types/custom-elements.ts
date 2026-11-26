@@ -1,6 +1,3 @@
-import type { Music } from "../domain/music";
-import type { MusicHandle } from "../domain/music-handle";
-import type { TypedEvent } from "../utils/types";
 import type { MusicUploaderElement } from "../components/music-uploader";
 import type { MusicListElement } from "../components/music-list";
 import type { MusicPlayerElement } from "../components/music-player";
@@ -11,7 +8,10 @@ import type {
   ShortcutKeyHandler,
   ShortcutKeyHandlerEventMap,
 } from "../components/music-player/_helpers/shortcut-key-handler";
+import type { Music } from "../domain/music";
+import type { MusicHandle } from "../domain/music-handle";
 import type { AudioPlayer, AudioPlayerEventMap } from "../lib/audio-player";
+import type { TypedEvent } from "../utils/types";
 
 // EventMapの各エントリをTypedEventに変換する
 type ToTypedEventMap<

@@ -56,24 +56,16 @@ export class PlayControlElement extends HTMLElement {
   set state(state: "playing" | "paused") {
     switch (state) {
       case "playing":
-        this.#toPlaying();
+        this.#playIcon.hidden = true;
+        this.#pauseIcon.hidden = false;
         break;
       case "paused":
-        this.#toPaused();
+        this.#playIcon.hidden = false;
+        this.#pauseIcon.hidden = true;
         break;
       default:
         state satisfies never;
     }
-  }
-
-  #toPlaying() {
-    this.#playIcon.hidden = true;
-    this.#pauseIcon.hidden = false;
-  }
-
-  #toPaused() {
-    this.#playIcon.hidden = false;
-    this.#pauseIcon.hidden = true;
   }
 
   #startSeek = () => {

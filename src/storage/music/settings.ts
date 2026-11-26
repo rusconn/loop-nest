@@ -1,26 +1,25 @@
+import { Music } from "../../domain/music";
 import { debounce } from "../../lib/debounce";
-import type { Music } from "../../domain/music";
-import { Settings } from "../../domain/music/settings";
 
 export const MusicSettingsStorage = {
-  get(id: Music["id"]): Settings | undefined {
+  get(id: Music["id"]): Music["settings"] | undefined {
     const scheduledUpdate = scheduledUpdates.get(id);
     if (scheduledUpdate != null) {
       return scheduledUpdate;
     }
     const saved = localStorage.getItem(`settings#${id}`);
-    return saved ? Settings.parse(saved) : undefined;
+    return saved ? Music.Settings.parse(saved) : undefined;
   },
-  upsert(id: Music["id"], settings: Settings) {
+  upsert(id: Music["id"], settings: Music["settings"]) {
     scheduledUpdates.set(id, { ...settings });
     scheduleUpdate();
   },
 };
 
-const scheduledUpdates = new Map<Music["id"], Settings>();
+const scheduledUpdates = new Map<Music["id"], Music["settings"]>();
 const scheduleUpdate = debounce(doUpdates, 200);
 
-function set(id: Music["id"], settings: Settings) {
+function set(id: Music["id"], settings: Music["settings"]) {
   localStorage.setItem(`settings#${id}`, JSON.stringify(settings));
 }
 

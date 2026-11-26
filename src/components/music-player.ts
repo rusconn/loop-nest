@@ -111,18 +111,16 @@ export class MusicPlayerElement extends HTMLElement {
   }
 
   async load(handle: MusicHandle) {
+    let buffer: ArrayBuffer;
     try {
-      await this.#load(handle);
+      buffer = await handle.file.arrayBuffer();
     } catch (cause) {
       console.error(cause, handle.id);
       alert("Sorry, failed to load the music file.\nThe file may have been moved or deleted.");
+      return;
     }
-  }
 
-  async #load(handle: MusicHandle) {
-    const { id, metadata, file } = handle;
-
-    const buffer = await file.arrayBuffer();
+    const { id, metadata } = handle;
     const settings = this.#resolveSettings(id);
     const music = Music.create(id, metadata, settings);
 
@@ -144,12 +142,14 @@ export class MusicPlayerElement extends HTMLElement {
     this.removeAttribute("inert");
 
     switch (result.type) {
-      case "success":
+      case "success": {
+        const music = Music.create(id, metadata, settings);
         this.#loadToUI(music);
         this.#loadToMediaSession(music);
         this.#loadedMusic = music;
         dispatchTypedEvent(this, "music-player:complete-loading", { id });
         break;
+      }
       case "failed":
         console.error(result.cause);
         dispatchTypedEvent(this, "music-player:fail-loading", { id });
@@ -337,7 +337,7 @@ export class MusicPlayerElement extends HTMLElement {
     this.#stopUpdateCurrentTime();
   }
 
-  #loadToUI(music: Music) {
+  #loadToUI(music: Pick<Music, "metadata" | "settings">) {
     const { metadata, settings } = music;
     const { format } = metadata;
 
@@ -348,7 +348,7 @@ export class MusicPlayerElement extends HTMLElement {
     this.#controlsFieldset.disabled = false;
   }
 
-  #loadToMediaSession(music: Music) {
+  #loadToMediaSession(music: Pick<Music, "metadata">) {
     this.#mediaSession.loadMetadata(music.metadata.common);
   }
 

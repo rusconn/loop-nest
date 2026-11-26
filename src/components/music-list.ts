@@ -16,20 +16,19 @@ export class MusicListElement extends HTMLElement {
   }
 
   async add(files: FileList) {
-    const willMaybeLiFragments = [...files].map(this.#toWillMaybeLiFragment.bind(this));
-    const maybeLiFragments = await Promise.all(willMaybeLiFragments);
-    const liFragments = maybeLiFragments.filter((mlif) => mlif != null);
+    const maybeLiFragments = await Promise.all([...files].map(this.#tryCreateLiFragment));
+    const liFragments = maybeLiFragments.filter((li) => li != null);
     this.#ul.prepend(...liFragments);
   }
 
-  async #toWillMaybeLiFragment(file: File) {
+  #tryCreateLiFragment = async (file: File) => {
     const id = Music.Id.create(file);
 
     const savedMetadata = MusicMetadataStorage.get(id);
     const isOldMetadata = (savedMetadata?.version ?? Infinity) < Music.Metadata.CURRENT_VERSION;
 
     if (savedMetadata != null && !isOldMetadata) {
-      return this.#buildLiFragment(id, savedMetadata, file);
+      return this.#createLiFragment(id, savedMetadata, file);
     }
 
     const buffer = await file.arrayBuffer();
@@ -41,7 +40,7 @@ export class MusicListElement extends HTMLElement {
         if (savedMetadata == null || isOldMetadata) {
           MusicMetadataStorage.set(id, result.metadata);
         }
-        return this.#buildLiFragment(id, result.metadata, file);
+        return this.#createLiFragment(id, result.metadata, file);
       }
       case "invalid-loop":
         console.error(result.message, file.name);
@@ -55,9 +54,9 @@ export class MusicListElement extends HTMLElement {
       default:
         throw new Error(result satisfies never);
     }
-  }
+  };
 
-  #buildLiFragment(id: Music["id"], metadata: Music["metadata"], file: File) {
+  #createLiFragment(id: Music["id"], metadata: Music["metadata"], file: File) {
     const liFragment = this.#liTemplate.content.cloneNode(true) as DocumentFragment;
     const li = liFragment.firstElementChild!;
     const [_, button] = li.children;

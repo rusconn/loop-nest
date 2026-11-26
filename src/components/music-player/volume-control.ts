@@ -54,16 +54,9 @@ export class VolumeControlElement extends HTMLElement {
   }
 
   set muted(muted: boolean) {
-    if (muted) {
-      this.#triggerVolumeIcon.hidden = true;
-      this.#triggerMutedIcon.hidden = false;
-      this.#popupVolumeIcon.hidden = true;
-      this.#popupMutedIcon.hidden = false;
-    } else {
-      this.#triggerVolumeIcon.hidden = false;
-      this.#triggerMutedIcon.hidden = true;
-      this.#popupVolumeIcon.hidden = false;
-      this.#popupMutedIcon.hidden = true;
-    }
+    this.#triggerVolumeIcon.hidden = muted;
+    this.#triggerMutedIcon.hidden = !muted;
+    this.#popupVolumeIcon.hidden = muted;
+    this.#popupMutedIcon.hidden = !muted;
   }
 }
