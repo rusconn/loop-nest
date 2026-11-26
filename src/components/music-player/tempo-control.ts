@@ -39,10 +39,6 @@ export class TempoControlElement extends HTMLElement {
     });
   }
 
-  get tempo() {
-    return Number(this.#tempoBar.value);
-  }
-
   set tempo(tempo: number) {
     const tempoValue = tempo.toFixed(2);
     this.#tempoBar.value = tempoValue;

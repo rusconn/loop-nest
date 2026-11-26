@@ -65,7 +65,7 @@ export class MusicPlayerElement extends HTMLElement {
       this.toggleMute();
     });
     this.#volumeControl.addEventListener("volume-control:seek", (e) => {
-      this.volume = e.detail.volume / 100;
+      this.volume = e.detail.volume;
     });
   }
 
@@ -187,19 +187,19 @@ export class MusicPlayerElement extends HTMLElement {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
     const settings = Music.Settings.withVolume(this.#loadedMusic.settings, volume);
     this.#audioPlayer.volume = settings.volume;
-    this.#volumeControl.volume = Math.round(settings.volume * 100);
+    this.#volumeControl.volume = settings.volume;
     this.#loadedMusic.settings = settings;
     MusicSettingsStorage.upsert(this.#loadedMusic.id, settings);
   }
 
   downVolume(amount: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.volume = this.#volumeControl.volume / 100 - amount;
+    this.volume = this.#loadedMusic.settings.volume - amount;
   }
 
   upVolume(amount: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.volume = this.#volumeControl.volume / 100 + amount;
+    this.volume = this.#loadedMusic.settings.volume + amount;
   }
 
   set tempo(tempo: number) {
@@ -213,12 +213,12 @@ export class MusicPlayerElement extends HTMLElement {
 
   downTempo(amount: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.tempo = this.#tempoControl.tempo - amount;
+    this.tempo = this.#loadedMusic.settings.tempo - amount;
   }
 
   upTempo(amount: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.tempo = this.#tempoControl.tempo + amount;
+    this.tempo = this.#loadedMusic.settings.tempo + amount;
   }
 
   async play() {
@@ -313,16 +313,16 @@ export class MusicPlayerElement extends HTMLElement {
 
   async seekBackward(secs: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const { time, min, max } = this.#playControl;
-    const sec = clamp(time - secs, min, max);
-    await this.seekTo(sec);
+    const currentTime = this.#audioPlayer.currentTime ?? 0;
+    const duration = this.#loadedMusic.metadata.format.duration;
+    await this.seekTo(clamp(currentTime - secs, 0, duration));
   }
 
   async seekForward(secs: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    const { time, min, max } = this.#playControl;
-    const sec = clamp(time + secs, min, max);
-    await this.seekTo(sec);
+    const currentTime = this.#audioPlayer.currentTime ?? 0;
+    const duration = this.#loadedMusic.metadata.format.duration;
+    await this.seekTo(clamp(currentTime + secs, 0, duration));
   }
 
   toggleMute() {
@@ -353,7 +353,7 @@ export class MusicPlayerElement extends HTMLElement {
 
     this.#playControl.duration = format.duration;
     this.#playControl.time = 0;
-    this.#volumeControl.volume = Math.round(settings.volume * 100);
+    this.#volumeControl.volume = settings.volume;
     this.#tempoControl.tempo = settings.tempo;
     this.#controlsFieldset.disabled = false;
   }

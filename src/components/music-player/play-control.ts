@@ -36,10 +36,6 @@ export class PlayControlElement extends HTMLElement {
     this.#seekBar.addEventListener("touchend", this.#endSeek);
   }
 
-  get time() {
-    return Number(this.#seekBar.value);
-  }
-
   set time(second: number) {
     const text = formatSec(second);
     if (this.#currentTime.textContent !== text) {
@@ -55,14 +51,6 @@ export class PlayControlElement extends HTMLElement {
     this.#durationValue = durationSecs;
     const text = formatSec(durationSecs);
     this.#durationDisplay.textContent = text;
-  }
-
-  get min() {
-    return Number(this.#seekBar.min);
-  }
-
-  get max() {
-    return Number(this.#seekBar.max);
   }
 
   set state(state: "playing" | "paused") {

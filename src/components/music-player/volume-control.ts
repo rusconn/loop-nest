@@ -42,17 +42,13 @@ export class VolumeControlElement extends HTMLElement {
 
     this.#volumeBar.addEventListener("input", (e) => {
       const input = e.currentTarget as HTMLInputElement;
-      const value = Number(input.value);
+      const value = Number(input.value) / 100;
       dispatchTypedEvent(this, "volume-control:seek", { volume: value });
     });
   }
 
-  get volume() {
-    return Number(this.#volumeBar.value);
-  }
-
   set volume(volume: number) {
-    const volumeValue = volume.toString();
+    const volumeValue = Math.round(volume * 100).toString();
     this.#volumeBar.value = volumeValue;
     this.#popupVolumeText.textContent = volumeValue;
   }
