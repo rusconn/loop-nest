@@ -95,21 +95,13 @@ export class MusicPlayerElement extends HTMLElement {
       const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:seek-forward"];
       await this.seekForward(ev.detail.secs);
     });
-    this.#shortcutKey.addEventListener("shortcut-key-handler:down-volume", (e) => {
-      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:down-volume"];
-      this.downVolume(ev.detail.amount);
+    this.#shortcutKey.addEventListener("shortcut-key-handler:change-volume", (e) => {
+      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:change-volume"];
+      this.changeVolume(ev.detail.delta);
     });
-    this.#shortcutKey.addEventListener("shortcut-key-handler:up-volume", (e) => {
-      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:up-volume"];
-      this.upVolume(ev.detail.amount);
-    });
-    this.#shortcutKey.addEventListener("shortcut-key-handler:down-tempo", (e) => {
-      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:down-tempo"];
-      this.downTempo(ev.detail.amount);
-    });
-    this.#shortcutKey.addEventListener("shortcut-key-handler:up-tempo", (e) => {
-      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:up-tempo"];
-      this.upTempo(ev.detail.amount);
+    this.#shortcutKey.addEventListener("shortcut-key-handler:change-tempo", (e) => {
+      const ev = e as ShortcutKeyHandlerEventMap["shortcut-key-handler:change-tempo"];
+      this.changeTempo(ev.detail.delta);
     });
     this.#shortcutKey.register();
   }
@@ -186,39 +178,41 @@ export class MusicPlayerElement extends HTMLElement {
   set volume(volume: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
     const settings = Music.Settings.withVolume(this.#loadedMusic.settings, volume);
+    this.#applyVolume(settings);
+  }
+
+  changeVolume(delta: number) {
+    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
+    const settings = Music.Settings.changeVolume(this.#loadedMusic.settings, delta);
+    this.#applyVolume(settings);
+  }
+
+  #applyVolume(settings: Music["settings"]) {
+    if (!this.#loadedMusic) return;
     this.#audioPlayer.volume = settings.volume;
     this.#volumeControl.volume = settings.volume;
     this.#loadedMusic.settings = settings;
     MusicSettingsStorage.upsert(this.#loadedMusic.id, settings);
   }
 
-  downVolume(amount: number) {
-    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.volume = this.#loadedMusic.settings.volume - amount;
-  }
-
-  upVolume(amount: number) {
-    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.volume = this.#loadedMusic.settings.volume + amount;
-  }
-
   set tempo(tempo: number) {
     if (this.hasAttribute("inert") || !this.#loadedMusic) return;
     const settings = Music.Settings.withTempo(this.#loadedMusic.settings, tempo);
+    this.#applyTempo(settings);
+  }
+
+  changeTempo(delta: number) {
+    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
+    const settings = Music.Settings.changeTempo(this.#loadedMusic.settings, delta);
+    this.#applyTempo(settings);
+  }
+
+  #applyTempo(settings: Music["settings"]) {
+    if (!this.#loadedMusic) return;
     this.#audioPlayer.tempo = settings.tempo;
     this.#tempoControl.tempo = settings.tempo;
     this.#loadedMusic.settings = settings;
     MusicSettingsStorage.upsert(this.#loadedMusic.id, settings);
-  }
-
-  downTempo(amount: number) {
-    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.tempo = this.#loadedMusic.settings.tempo - amount;
-  }
-
-  upTempo(amount: number) {
-    if (this.hasAttribute("inert") || !this.#loadedMusic) return;
-    this.tempo = this.#loadedMusic.settings.tempo + amount;
   }
 
   async play() {

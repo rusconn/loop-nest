@@ -47,7 +47,15 @@ export const Settings = {
     return { ...settings, volume: clamp(volume, VOLUME_MIN, VOLUME_MAX) };
   },
 
+  changeVolume(settings: Settings, delta: number): Settings {
+    return Settings.withVolume(settings, settings.volume + delta);
+  },
+
   withTempo(settings: Settings, tempo: number): Settings {
     return { ...settings, tempo: clamp(tempo, TEMPO_MIN, TEMPO_MAX) };
+  },
+
+  changeTempo(settings: Settings, delta: number): Settings {
+    return Settings.withTempo(settings, settings.tempo + delta);
   },
 };

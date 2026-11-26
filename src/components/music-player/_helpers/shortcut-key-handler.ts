@@ -6,10 +6,8 @@ export type ShortcutKeyHandlerEventMap = {
   "shortcut-key-handler:toggle-mute": CustomEvent<{}>;
   "shortcut-key-handler:seek-backward": CustomEvent<{ secs: number }>;
   "shortcut-key-handler:seek-forward": CustomEvent<{ secs: number }>;
-  "shortcut-key-handler:down-volume": CustomEvent<{ amount: number }>;
-  "shortcut-key-handler:up-volume": CustomEvent<{ amount: number }>;
-  "shortcut-key-handler:down-tempo": CustomEvent<{ amount: number }>;
-  "shortcut-key-handler:up-tempo": CustomEvent<{ amount: number }>;
+  "shortcut-key-handler:change-volume": CustomEvent<{ delta: number }>;
+  "shortcut-key-handler:change-tempo": CustomEvent<{ delta: number }>;
 };
 
 export class ShortcutKeyHandler extends EventTarget {
@@ -44,16 +42,16 @@ export class ShortcutKeyHandler extends EventTarget {
         dispatchTypedEvent(this, "shortcut-key-handler:seek-forward", { secs: 5 });
         break;
       case "down-volume":
-        dispatchTypedEvent(this, "shortcut-key-handler:down-volume", { amount: 0.05 });
+        dispatchTypedEvent(this, "shortcut-key-handler:change-volume", { delta: -0.05 });
         break;
       case "up-volume":
-        dispatchTypedEvent(this, "shortcut-key-handler:up-volume", { amount: 0.05 });
+        dispatchTypedEvent(this, "shortcut-key-handler:change-volume", { delta: 0.05 });
         break;
       case "down-tempo":
-        dispatchTypedEvent(this, "shortcut-key-handler:down-tempo", { amount: 0.01 });
+        dispatchTypedEvent(this, "shortcut-key-handler:change-tempo", { delta: -0.01 });
         break;
       case "up-tempo":
-        dispatchTypedEvent(this, "shortcut-key-handler:up-tempo", { amount: 0.01 });
+        dispatchTypedEvent(this, "shortcut-key-handler:change-tempo", { delta: 0.01 });
         break;
       default:
         shortcut satisfies never;
