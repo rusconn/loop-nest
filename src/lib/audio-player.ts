@@ -19,7 +19,7 @@ export type LoadOptions = {
   loop?: boolean | { start: number; end: number };
 };
 
-type LoadResult =
+export type LoadResult =
   | { type: "success" } //
   | { type: "failed"; cause: DOMException }
   | { type: "unsupported" };

@@ -116,7 +116,6 @@ export class MusicListElement extends HTMLElement {
       loading.hidden = true;
     }
 
-    alert("Sorry, failed to load the music file.\nTry another browser.");
     this.#ul.removeAttribute("inert");
   }
 

@@ -1,7 +1,7 @@
 import { Music } from "../domain/music";
 import type { MusicHandle } from "../domain/music-handle";
 import { PlaybackPosition } from "../domain/playback-position";
-import { AudioPlayer } from "../lib/audio-player";
+import { AudioPlayer, type LoadResult } from "../lib/audio-player";
 import { MusicSettingsStorage } from "../storage/music/settings";
 import {
   ShortcutKeyHandler,
@@ -111,33 +111,44 @@ export class MusicPlayerElement extends HTMLElement {
   }
 
   async load(handle: MusicHandle) {
+    if (this.hasAttribute("inert")) return;
+    this.setAttribute("inert", "");
+
+    const { id, metadata } = handle;
+
+    dispatchTypedEvent(this, "music-player:start-loading", { id });
+    this.#pauseUI();
+
     let buffer: ArrayBuffer;
     try {
       buffer = await handle.file.arrayBuffer();
     } catch (cause) {
-      console.error(cause, handle.id);
+      console.error(cause, id);
       alert("Sorry, failed to load the music file.\nThe file may have been moved or deleted.");
+      dispatchTypedEvent(this, "music-player:fail-loading", { id });
+      this.removeAttribute("inert");
       return;
     }
 
-    const { id, metadata } = handle;
-    const settings = this.#resolveSettings(id);
-    const music = Music.create(id, metadata, settings);
-
-    dispatchTypedEvent(this, "music-player:start-loading", { id });
-
-    this.setAttribute("inert", "");
-    this.#pauseUI();
-
     const { format, loopInfo } = metadata;
     const { duration } = format;
+    const settings = this.#resolveSettings(id);
 
     console.log(loopInfo ?? "none");
 
-    const result = await this.#audioPlayer.load(buffer, duration, {
-      ...settings,
-      loop: loopInfo ?? true,
-    });
+    let result: LoadResult;
+    try {
+      result = await this.#audioPlayer.load(buffer, duration, {
+        ...settings,
+        loop: loopInfo ?? true,
+      });
+    } catch (cause) {
+      // unexpected exception
+      console.error(cause, id);
+      dispatchTypedEvent(this, "music-player:fail-loading", { id });
+      this.removeAttribute("inert");
+      return;
+    }
 
     this.removeAttribute("inert");
 
@@ -152,10 +163,12 @@ export class MusicPlayerElement extends HTMLElement {
       }
       case "failed":
         console.error(result.cause);
+        alert("Sorry, failed to load the music file.\nTry another browser.");
         dispatchTypedEvent(this, "music-player:fail-loading", { id });
         break;
       case "unsupported":
         console.error("unsupported operation");
+        dispatchTypedEvent(this, "music-player:fail-loading", { id });
         break;
       default:
         result satisfies never;
