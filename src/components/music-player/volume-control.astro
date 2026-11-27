@@ -16,7 +16,7 @@ const { props } = Astro;
     <ControlIcon class="volume-icon" iconId="clarity--volume-up-solid" />
     <ControlIcon class="muted-icon" iconId="clarity--volume-mute-solid" hidden />
   </button>
-  <ControlPopup id="volume-popup">
+  <ControlPopup id="volume-popup" anchorName="--volume-trigger">
     <span class="volume-text">100</span>
     <ControlBar class="volume-bar" min="0" max="100" step="5" value="100" />
     <ControlButton class="mute-button">
@@ -39,6 +39,7 @@ const { props } = Astro;
   }
 
   .trigger {
+    anchor-name: --volume-trigger;
     display: inline-flex;
     align-items: center;
     justify-content: center;

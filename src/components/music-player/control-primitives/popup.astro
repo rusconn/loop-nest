@@ -1,12 +1,13 @@
 ---
 type Props = {
   id: string;
+  anchorName: string;
 };
 
-const { id } = Astro.props;
+const { id, anchorName } = Astro.props;
 ---
 
-<div class="popup" id={id} popover="auto">
+<div class="popup" id={id} popover="auto" style={`position-anchor: ${anchorName};`}>
   <div class="popup-inner">
     <slot />
   </div>
@@ -18,7 +19,10 @@ const { id } = Astro.props;
     inset: unset;
     margin: 0;
     overflow: visible;
-    position: absolute;
+    position: fixed;
+    bottom: calc(anchor(top) + 8px);
+    left: anchor(center);
+    transform: translateX(-50%);
     z-index: 10;
     color: inherit;
     padding: 0.5rem;

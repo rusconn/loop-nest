@@ -15,7 +15,7 @@ const { props } = Astro;
   <button class="trigger" type="button" popovertarget="tempo-popup">
     <ControlIcon class="tempo-icon" iconId="mdi--metronome" />
   </button>
-  <ControlPopup id="tempo-popup">
+  <ControlPopup id="tempo-popup" anchorName="--tempo-trigger">
     <span class="tempo-text">1.00</span>
     <ControlBar class="tempo-bar" min="0.5" max="1.5" value="1" step="0.01" />
     <ControlButton class="tempo-button">
@@ -37,6 +37,7 @@ const { props } = Astro;
   }
 
   .trigger {
+    anchor-name: --tempo-trigger;
     display: inline-flex;
     align-items: center;
     justify-content: center;

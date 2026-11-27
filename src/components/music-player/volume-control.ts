@@ -1,11 +1,9 @@
 import { dispatchTypedEvent } from "../../utils/event";
 
 export class VolumeControlElement extends HTMLElement {
-  #trigger!: HTMLButtonElement;
   #triggerVolumeIcon!: HTMLSpanElement;
   #triggerMutedIcon!: HTMLSpanElement;
 
-  #popup!: HTMLDivElement;
   #muteButton!: HTMLButtonElement;
   #popupVolumeIcon!: HTMLSpanElement;
   #popupMutedIcon!: HTMLSpanElement;
@@ -13,28 +11,16 @@ export class VolumeControlElement extends HTMLElement {
   #popupVolumeText!: HTMLSpanElement;
 
   connectedCallback() {
-    this.#trigger = this.querySelector(".trigger")!;
-    this.#triggerVolumeIcon = this.#trigger.querySelector(".volume-icon")!;
-    this.#triggerMutedIcon = this.#trigger.querySelector(".muted-icon")!;
+    const trigger = this.querySelector(".trigger")!;
+    this.#triggerVolumeIcon = trigger.querySelector(".volume-icon")!;
+    this.#triggerMutedIcon = trigger.querySelector(".muted-icon")!;
 
-    this.#popup = this.querySelector(".popup")!;
-    this.#muteButton = this.#popup.querySelector(".mute-button")!;
+    const popup = this.querySelector(".popup")!;
+    this.#muteButton = popup.querySelector(".mute-button")!;
     this.#popupVolumeIcon = this.#muteButton.querySelector(".volume-icon")!;
     this.#popupMutedIcon = this.#muteButton.querySelector(".muted-icon")!;
-    this.#volumeBar = this.#popup.querySelector(".volume-bar")!;
-    this.#popupVolumeText = this.#popup.querySelector(".volume-text")!;
-
-    this.#popup.addEventListener("beforetoggle", (e: Event) => {
-      const toggleEvent = e as ToggleEvent;
-      if (toggleEvent.newState === "open") {
-        const rect = this.#trigger.getBoundingClientRect();
-        this.#popup.style.position = "fixed";
-        this.#popup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
-        this.#popup.style.left = `${rect.left + rect.width / 2}px`;
-        this.#popup.style.transform = "translateX(-50%)";
-        this.#popup.style.right = "auto";
-      }
-    });
+    this.#volumeBar = popup.querySelector(".volume-bar")!;
+    this.#popupVolumeText = popup.querySelector(".volume-text")!;
 
     this.#muteButton.addEventListener("click", () => {
       dispatchTypedEvent(this, "volume-control:toggle", {});

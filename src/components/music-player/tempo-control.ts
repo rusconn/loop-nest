@@ -1,32 +1,15 @@
 import { dispatchTypedEvent } from "../../utils/event";
 
 export class TempoControlElement extends HTMLElement {
-  #trigger!: HTMLButtonElement;
-
-  #popup!: HTMLDivElement;
   #tempoButton!: HTMLButtonElement;
   #tempoBar!: HTMLInputElement;
   #popupTempoText!: HTMLSpanElement;
 
   connectedCallback() {
-    this.#trigger = this.querySelector(".trigger")!;
-
-    this.#popup = this.querySelector(".popup")!;
-    this.#tempoButton = this.#popup.querySelector(".tempo-button")!;
-    this.#tempoBar = this.#popup.querySelector(".tempo-bar")!;
-    this.#popupTempoText = this.#popup.querySelector(".tempo-text")!;
-
-    this.#popup.addEventListener("beforetoggle", (e: Event) => {
-      const toggleEvent = e as ToggleEvent;
-      if (toggleEvent.newState === "open") {
-        const rect = this.#trigger.getBoundingClientRect();
-        this.#popup.style.position = "fixed";
-        this.#popup.style.bottom = `${window.innerHeight - rect.top + 8}px`;
-        this.#popup.style.left = `${rect.left + rect.width / 2}px`;
-        this.#popup.style.transform = "translateX(-50%)";
-        this.#popup.style.right = "auto";
-      }
-    });
+    const popup = this.querySelector(".popup")!;
+    this.#tempoButton = popup.querySelector(".tempo-button")!;
+    this.#tempoBar = popup.querySelector(".tempo-bar")!;
+    this.#popupTempoText = popup.querySelector(".tempo-text")!;
 
     this.#tempoButton.addEventListener("click", () => {
       dispatchTypedEvent(this, "tempo-control:reset", {});
