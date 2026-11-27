@@ -4,8 +4,6 @@ import { Id } from "./music/id";
 import { Metadata } from "./music/metadata";
 import { Settings } from "./music/settings";
 
-export type { MetadataPossiblyOld } from "./music/metadata";
-
 type Raw = {
   id: Id;
   metadata: Metadata;

@@ -25,27 +25,25 @@ export class MusicListElement extends HTMLElement {
     const id = Music.Id.create(file);
 
     const savedMetadata = MusicMetadataStorage.get(id);
-    const isOldMetadata = (savedMetadata?.version ?? Infinity) < Music.Metadata.CURRENT_VERSION;
-
-    if (savedMetadata != null && !isOldMetadata) {
+    if (savedMetadata != null) {
       return this.#createLiFragment(id, savedMetadata, file);
     }
 
-    const buffer = await file.arrayBuffer();
-    const result = await Music.Metadata.parse(buffer, file.type, file.name);
+    const result = await Music.Metadata.parseFile(file);
 
     // TODO: make some announcement
     switch (result.kind) {
       case "ok": {
-        if (savedMetadata == null || isOldMetadata) {
-          MusicMetadataStorage.set(id, result.metadata);
-        }
+        MusicMetadataStorage.set(id, result.metadata);
         return this.#createLiFragment(id, result.metadata, file);
       }
+      case "unreadable":
+        console.error(result.cause, file.name);
+        break;
       case "invalid-loop":
         console.error(result.message, file.name);
         break;
-      case "unreadable":
+      case "invalid-metadata":
         console.error(result.cause, file.name);
         break;
       case "no-duration":
