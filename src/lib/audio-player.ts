@@ -154,8 +154,9 @@ export class AudioPlayer extends EventTarget {
       await this.#init();
     }
 
-    this.volume = 0;
     const prevState = this.#state;
+    const prevVolume = this.#gainNode?.gain.value ?? 1;
+    this.volume = 0;
     this.#state = "loading";
 
     const { tempo = 1, volume = 1, loop = false } = options;
@@ -165,6 +166,7 @@ export class AudioPlayer extends EventTarget {
       this.#state = "loaded";
     } catch (e) {
       this.#state = prevState;
+      this.volume = prevVolume;
       if (e instanceof DOMException) {
         return { type: "failed", cause: e };
       }
