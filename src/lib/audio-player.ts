@@ -184,7 +184,6 @@ export class AudioPlayer extends EventTarget {
 
     try {
       await context.suspend();
-      const source = context.createBufferSource();
       const gain = new GainNode(context, { gain: 1 });
       const mute = new GainNode(context, { gain: 1 });
 
@@ -193,7 +192,6 @@ export class AudioPlayer extends EventTarget {
         .connect(context.destination);
 
       this.#context = context;
-      this.#sourceNode = source;
       this.#gainNode = gain;
       this.#muteNode = mute;
     } catch (e) {
@@ -319,7 +317,7 @@ export class AudioPlayer extends EventTarget {
   }
 
   async #recreateSourceNode(args: RecreateSourceNodeArgs) {
-    if (!this.#context || !this.#sourceNode || !this.#gainNode) {
+    if (!this.#context || !this.#gainNode) {
       throw new Error("bug");
     }
 
@@ -352,6 +350,9 @@ export class AudioPlayer extends EventTarget {
         break;
       }
       case "seek":
+        if (!oldSource) {
+          throw new Error("bug");
+        }
         offset = args.offset;
         newSource.buffer = oldSource.buffer;
         newSource.playbackRate.value = oldSource.playbackRate.value;
@@ -371,9 +372,11 @@ export class AudioPlayer extends EventTarget {
     this.#sourceNode.connect(this.#gainNode);
     this.#sourceNode.start(0, offset);
 
-    oldSource.onended = null;
-    oldSource.disconnect();
-    oldSource.buffer = null;
+    if (oldSource) {
+      oldSource.onended = null;
+      oldSource.disconnect();
+      oldSource.buffer = null;
+    }
   }
 
   toggleMute(): ToggleMuteResult {
