@@ -151,7 +151,7 @@ export class AudioPlayer extends EventTarget {
 
   async #load(audio: ArrayBuffer, duration: number, options: LoadOptions): Promise<LoadResult> {
     if (!this.#context || !this.#gainNode) {
-      this.#init();
+      await this.#init();
     }
 
     this.volume = 0;
@@ -177,16 +177,27 @@ export class AudioPlayer extends EventTarget {
     return { type: "success" };
   }
 
-  #init() {
-    this.#context = new AudioContext();
-    this.#context.suspend();
-    this.#sourceNode = this.#context.createBufferSource();
-    this.#gainNode = new GainNode(this.#context, { gain: 1 });
-    this.#muteNode = new GainNode(this.#context, { gain: 1 });
+  async #init() {
+    const context = new AudioContext();
 
-    this.#gainNode //
-      .connect(this.#muteNode)
-      .connect(this.#context.destination);
+    try {
+      await context.suspend();
+      const source = context.createBufferSource();
+      const gain = new GainNode(context, { gain: 1 });
+      const mute = new GainNode(context, { gain: 1 });
+
+      gain //
+        .connect(mute)
+        .connect(context.destination);
+
+      this.#context = context;
+      this.#sourceNode = source;
+      this.#gainNode = gain;
+      this.#muteNode = mute;
+    } catch (e) {
+      await context.close().catch(() => {});
+      throw e;
+    }
   }
 
   async play(): Promise<PlayResult> {
