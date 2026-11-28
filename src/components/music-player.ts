@@ -130,15 +130,14 @@ export class MusicPlayerElement extends HTMLElement {
       return;
     }
 
-    const { format, loopInfo } = metadata;
-    const { duration } = format;
+    const { loopInfo } = metadata;
     const settings = this.#resolveSettings(id);
 
     console.log(loopInfo ?? "none");
 
     let result: LoadResult;
     try {
-      result = await this.#audioPlayer.load(buffer, duration, {
+      result = await this.#audioPlayer.load(buffer, {
         ...settings,
         loop: loopInfo ?? true,
       });

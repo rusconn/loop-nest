@@ -137,19 +137,19 @@ export class AudioPlayer extends EventTarget {
     );
   }
 
-  async load(audio: ArrayBuffer, duration: number, options: LoadOptions): Promise<LoadResult> {
+  async load(audio: ArrayBuffer, options: LoadOptions): Promise<LoadResult> {
     switch (this.#state) {
       case "unloaded":
       case "loaded":
       case "playing":
       case "paused":
-        return await this.#load(audio, duration, options);
+        return await this.#load(audio, options);
       default:
         return { type: "unsupported" };
     }
   }
 
-  async #load(audio: ArrayBuffer, duration: number, options: LoadOptions): Promise<LoadResult> {
+  async #load(audio: ArrayBuffer, options: LoadOptions): Promise<LoadResult> {
     if (!this.#context || !this.#gainNode) {
       await this.#init();
     }
@@ -161,9 +161,9 @@ export class AudioPlayer extends EventTarget {
 
     const { tempo = 1, volume = 1, loop = false } = options;
 
+    let source: AudioBufferSourceNode;
     try {
-      await this.#recreateSourceNode({ type: "load", audio, tempo, volume, loop });
-      this.#state = "loaded";
+      source = await this.#recreateSourceNode({ type: "load", audio, tempo, volume, loop });
     } catch (e) {
       this.#state = prevState;
       this.volume = prevVolume;
@@ -172,7 +172,8 @@ export class AudioPlayer extends EventTarget {
       }
       throw e;
     }
-    this.#audioDuration = duration;
+    this.#state = "loaded";
+    this.#audioDuration = source.buffer?.duration ?? 0;
     this.#accElapsedTime = 0;
     this.#intervalStartTime = this.#context!.currentTime;
 
@@ -316,7 +317,7 @@ export class AudioPlayer extends EventTarget {
     return await this.seekTo((this.currentTime ?? 0) + secs);
   }
 
-  async #recreateSourceNode(args: RecreateSourceNodeArgs) {
+  async #recreateSourceNode(args: RecreateSourceNodeArgs): Promise<AudioBufferSourceNode> {
     if (!this.#context || !this.#gainNode) {
       throw new Error("bug");
     }
@@ -377,6 +378,8 @@ export class AudioPlayer extends EventTarget {
       oldSource.disconnect();
       oldSource.buffer = null;
     }
+
+    return newSource;
   }
 
   toggleMute(): ToggleMuteResult {
